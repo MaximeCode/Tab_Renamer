@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        width: 320px;
+        padding: 16px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+      }
+      h3 {
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #202124;
+      }
+      input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+        margin-bottom: 12px;
+      }
+      input:focus {
+        outline: none;
+        border-color: #1a73e8;
+      }
+      button {
+        width: 100%;
+        padding: 8px 16px;
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      button:hover {
+        background-color: #1557b0;
+      }
+      button:active {
+        background-color: #0d47a1;
+      }
+      .reset-btn {
+        background-color: #f1f3f4;
+        color: #5f6368;
+        margin-top: 8px;
+      }
+      .reset-btn:hover {
+        background-color: #e8eaed;
+      }
+      .status {
+        margin-top: 12px;
+        padding: 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        text-align: center;
+        display: none;
+      }
+      .status.success {
+        background-color: #e6f4ea;
+        color: #137333;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Renommer cet onglet</h3>
+    <input type="text" id="tabName" placeholder="Entrez le nouveau nom..." />
+    <button id="renameBtn">Renommer</button>
+    <button id="resetBtn" class="reset-btn">Réinitialiser</button>
+    <div id="status" class="status"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>
