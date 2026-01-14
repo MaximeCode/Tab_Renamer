@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tab Renamer Persistent",
   "version": "1.0",
-  "description": "Renommez vos onglets de manière persistante par URL",
+  "description": "Renommez vos onglets de manière persistante par URL. Project open-source By Max (@MaximeCode sur GitHub)",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "host_permissions": ["<all_urls>"],
   "action": {
