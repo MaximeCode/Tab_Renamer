@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const resetBtn = document.getElementById("resetBtn");
   const status = document.getElementById("status");
   const titleText = document.getElementById("titleText");
-  const warningText = document.getElementById("warningText");
   const langFrBtn = document.getElementById("langFr");
   const langEnBtn = document.getElementById("langEn");
   const matchExactRadio = document.getElementById("matchExact");
@@ -12,6 +11,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const matchTypeLabel = document.getElementById("matchTypeLabel");
   const matchExactLabel = document.getElementById("matchExactLabel");
   const matchPrefixLabel = document.getElementById("matchPrefixLabel");
+  const devModeToogle = document.getElementById("devModeToogle");
+  const devModeLabel = document.getElementById("devModeLabel");
+  const dbModeHint = document.getElementById("dbModeHint");
+
+  // Récupérer l'onglet actif
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  const dbInfo = extractDbTableFromUrl(tab.url);
+  console.log(dbInfo);
 
   // Translations
   const translations = {
@@ -20,26 +28,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       placeholder: "Entrez le nouveau nom...",
       renameBtn: "Renommer",
       resetBtn: "Réinitialiser",
-      warning:
-        '⚠️ Attention : le bouton "Réinitialiser" recharge la page.<br />Pensez à sauvegarder votre travail avant d\'utiliser cette option !',
-      renamed: "✓ Onglet renommé !",
-      reset: "✓ Titre réinitialisé !",
+      renamed: "✔ Onglet renommé !",
+      reset: "✔ Titre réinitialisé !",
       matchTypeLabel: "Type de correspondance :",
       matchExact: "URL exacte",
       matchPrefix: "URL commence par",
+      devModeLabel: "Mode Dev : DB",
+      dbModeHint:
+        "Analyse l'URL pour associer un nom à une base de données et une table.",
+      dbModeMissing:
+        "❌ Mode DB indisponible : base de données ou table introuvable dans l'URL.",
     },
     en: {
       title: "Rename this tab",
       placeholder: "Enter new name...",
       renameBtn: "Rename",
       resetBtn: "Reset",
-      warning:
-        '⚠️ Warning: the "Reset" button reloads the page.<br />Remember to save your work before using this option!',
-      renamed: "✓ Tab renamed!",
-      reset: "✓ Title reset!",
+      renamed: "✔ Tab renamed!",
+      reset: "✔ Title reset!",
       matchTypeLabel: "Match type:",
       matchExact: "Exact URL",
       matchPrefix: "URL starts with",
+      devModeLabel: "Dev Mode : DB",
+      dbModeHint:
+        "Analyze the URL to associate a name with a database and a table.",
+      dbModeMissing:
+        "❌ DB mode unavailable: database or table not found in the URL.",
     },
   };
 
@@ -61,10 +75,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     tabNameInput.placeholder = t.placeholder;
     renameBtn.textContent = t.renameBtn;
     resetBtn.textContent = t.resetBtn;
-    warningText.innerHTML = t.warning;
     matchTypeLabel.textContent = t.matchTypeLabel;
     matchExactLabel.textContent = t.matchExact;
     matchPrefixLabel.textContent = t.matchPrefix;
+    devModeLabel.textContent = t.devModeLabel;
+    dbModeHint.textContent = t.dbModeHint;
 
     // Update language buttons
     langFrBtn.classList.toggle("active", lang === "fr");
@@ -77,25 +92,80 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Language switcher handlers
   langFrBtn.addEventListener("click", () => updateLanguage("fr"));
   langEnBtn.addEventListener("click", () => updateLanguage("en"));
-
-  // Récupérer l'onglet actif
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  devModeToogle.addEventListener("change", () => {
+    setDbModeEnabled(devModeToogle.checked);
+    if (!tabNameInput.value.trim()) {
+      tabNameInput.value = dbInfo.table;
+    }
+  });
 
   if (!tab) return;
 
   const url = tab.url;
   const originalTitle = tab.title; // Store original title for reset
 
+  function extractDbTableFromUrl(rawUrl) {
+    try {
+      const parsedUrl = new URL(rawUrl);
+      const params = parsedUrl.searchParams;
+      const db = params.get("db") || params.get("database");
+      const table = params.get("table") || params.get("tablename");
+
+      if (db && table) {
+        return {
+          db,
+          table,
+          host: parsedUrl.host,
+        };
+      }
+    } catch (error) {
+      // Ignore invalid URLs
+    }
+
+    return null;
+  }
+
+  function buildDbKey(dbInfo) {
+    return `db:${dbInfo.host}:${dbInfo.db}:${dbInfo.table}`;
+  }
+
+  function setDbModeEnabled(enabled) {
+    matchExactRadio.disabled = enabled;
+    matchPrefixRadio.disabled = enabled;
+    matchTypeLabel.style.opacity = enabled ? "0.5" : "1";
+    matchExactLabel.style.opacity = enabled ? "0.5" : "1";
+    matchPrefixLabel.style.opacity = enabled ? "0.5" : "1";
+  }
+
   // Helper function to find matching entry (same as in background.js)
   function findMatchingEntry(currentUrl, storageData) {
-    // First, check for exact match
+
+    // First, check for DB mode matches
+    if (dbInfo) {
+      for (const [storedKey, entry] of Object.entries(storageData)) {
+        if (storedKey === "language") continue;
+        if (!entry || typeof entry !== "object") continue;
+
+        if (entry.mode === "db" && entry.db && entry.table) {
+          const hostMatches = !entry.host || entry.host === dbInfo.host;
+          if (hostMatches && entry.db === dbInfo.db && entry.table === dbInfo.table) {
+            return { url: storedKey, entry: entry };
+          }
+        }
+      }
+    }
+
+    // Then, check for exact match
     if (storageData[currentUrl]) {
       return { url: currentUrl, entry: storageData[currentUrl] };
     }
 
     // Then, check for prefix matches
     for (const [storedUrl, entry] of Object.entries(storageData)) {
+      if (storedUrl === "language") continue;
       if (storedUrl === currentUrl) continue; // Already checked above
+
+      if (typeof entry === "object" && entry.mode === "db") continue;
 
       let matchType = "exact";
       if (typeof entry === "object" && entry.matchType) {
@@ -119,29 +189,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (typeof entry === "string") {
         tabNameInput.value = entry;
         matchExactRadio.checked = true; // Default to exact for old entries
+        devModeToogle.checked = false;
+        setDbModeEnabled(false);
       } else if (entry.name) {
         tabNameInput.value = entry.name;
-        const matchType = entry.matchType || "exact";
-        if (matchType === "prefix") {
-          matchPrefixRadio.checked = true;
+        if (entry.mode === "db") {
+          devModeToogle.checked = true;
+          setDbModeEnabled(true);
         } else {
-          matchExactRadio.checked = true;
+          devModeToogle.checked = false;
+          setDbModeEnabled(false);
+          const matchType = entry.matchType || "exact";
+          if (matchType === "prefix") {
+            matchPrefixRadio.checked = true;
+          } else {
+            matchExactRadio.checked = true;
+          }
         }
       }
-    } else {
-      tabNameInput.value = tab.title;
     }
     tabNameInput.select();
   });
 
   // Fonction pour afficher le statut
-  function showStatus(messageKey) {
+  function showStatus(messageKey, isError = false) {
     const message = translations[currentLang][messageKey];
     status.textContent = message;
-    status.classList.add("success");
+    status.classList.remove("success", "error");
+    status.classList.add(isError ? "error" : "success");
     setTimeout(() => {
-      status.classList.remove("success");
-    }, 2000);
+      status.classList.remove("success", "error");
+    }, 2500);
   }
 
   // Renommer l'onglet
@@ -153,6 +231,39 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    const isDbMode = devModeToogle.checked;
+
+    if (isDbMode) {
+      const dbInfo = extractDbTableFromUrl(url);
+      if (!dbInfo) {
+        showStatus("dbModeMissing", true);
+        return;
+      }
+
+      const dbKey = buildDbKey(dbInfo);
+      const dataToSave = {
+        name: newName,
+        mode: "db",
+        db: dbInfo.db,
+        table: dbInfo.table,
+        host: dbInfo.host,
+      };
+
+      chrome.storage.sync.set({ [dbKey]: dataToSave }, () => {
+        // Changer le titre immédiatement
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: (title) => {
+            document.title = title;
+          },
+          args: [newName],
+        });
+
+        showStatus("renamed");
+      });
+      return;
+    }
+
     // Get selected match type
     const matchType = matchExactRadio.checked ? "exact" : "prefix";
 
@@ -160,6 +271,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const dataToSave = {
       name: newName,
       matchType: matchType,
+      mode: "url",
     };
 
     chrome.storage.sync.set({ [url]: dataToSave }, () => {

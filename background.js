@@ -1,6 +1,44 @@
+function extractDbTableFromUrl(rawUrl) {
+  try {
+    const parsedUrl = new URL(rawUrl);
+    const params = parsedUrl.searchParams;
+    const db = params.get("db") || params.get("database");
+    const table = params.get("table") || params.get("tablename");
+
+    if (db && table) {
+      return {
+        db,
+        table,
+        host: parsedUrl.host,
+      };
+    }
+  } catch (error) {
+    // Ignore invalid URLs
+  }
+
+  return null;
+}
+
 // Helper function to find matching title for a URL
 function findMatchingTitle(url, storageData) {
-  // First, check for exact match
+  const dbInfo = extractDbTableFromUrl(url);
+
+  // First, check for DB mode matches
+  if (dbInfo) {
+    for (const [storedKey, entry] of Object.entries(storageData)) {
+      if (storedKey === "language") continue;
+      if (!entry || typeof entry !== "object") continue;
+
+      if (entry.mode === "db" && entry.db && entry.table) {
+        const hostMatches = !entry.host || entry.host === dbInfo.host;
+        if (hostMatches && entry.db === dbInfo.db && entry.table === dbInfo.table) {
+          return entry.name;
+        }
+      }
+    }
+  }
+
+  // Then, check for exact match
   if (storageData[url]) {
     const entry = storageData[url];
     // Handle both old format (string) and new format (object)
@@ -13,7 +51,9 @@ function findMatchingTitle(url, storageData) {
 
   // Then, check for prefix matches
   for (const [storedUrl, entry] of Object.entries(storageData)) {
+    if (storedUrl === "language") continue;
     if (storedUrl === url) continue; // Already checked above
+    if (typeof entry === "object" && entry.mode === "db") continue;
 
     let matchType = "exact";
     let name = null;

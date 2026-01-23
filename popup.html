@@ -69,6 +69,11 @@
         color: #137333;
         display: block;
       }
+      .status.error {
+        background-color: #fce8e6;
+        color: #c5221f;
+        display: block;
+      }
       .lang-switcher {
         position: absolute;
         top: 8px;
@@ -88,6 +93,7 @@
         margin: 0;
         border-radius: 2px;
         min-width: 32px;
+        transition: background-color 0.2s ease, color 0.2s ease;
       }
       .lang-btn:hover {
         background: #e8eaed;
@@ -136,6 +142,36 @@
         flex: 1;
         margin: 0;
       }
+      .db-mode-container {
+        margin-bottom: 12px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border: 1px solid #e8eaed;
+      }
+      .db-mode-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #202124;
+        cursor: pointer;
+      }
+      .db-mode-option input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        cursor: pointer;
+      }
+      .db-mode-option label {
+        cursor: pointer;
+        flex: 1;
+        margin: 0;
+      }
+      .db-mode-hint {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #5f6368;
+      }
     </style>
   </head>
   <body>
@@ -158,22 +194,17 @@
         </div>
       </div>
     </div>
+    <div class="db-mode-container">
+      <div class="db-mode-option">
+        <input type="checkbox" id="devModeToogle" />
+        <label for="devModeToogle" id="devModeLabel">Mode Dev : DB</label>
+      </div>
+      <div class="db-mode-hint" id="dbModeHint">
+        Analyse l'URL pour associer un nom à une base et une table.
+      </div>
+    </div>
     <button id="renameBtn">Renommer</button>
     <button id="resetBtn" class="reset-btn">Réinitialiser</button>
-    <div
-      id="warningText"
-      style="
-        margin-top: 8px;
-        font-size: 12px;
-        color: #505050;
-        background: #fff7f7;
-        padding: 6px 8px;
-        border-radius: 3px;
-      "
-    >
-      ⚠️ Attention : le bouton "Réinitialiser" recharge la page.<br />
-      Pensez à sauvegarder votre travail avant d'utiliser cette option !
-    </div>
     <div id="status" class="status"></div>
     <script src="popup.js"></script>
   </body>
