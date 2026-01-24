@@ -1,10 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "Tab Renamer Persistent",
-  "version": "1.0",
-  "description": "Renommez vos onglets de manière persistante par URL. Project open-source By Max (@MaximeCode sur GitHub)",
-  "permissions": ["storage", "activeTab", "tabs", "scripting"],
-  "host_permissions": ["<all_urls>"],
+  "name": "Custom Tab Name - Smart Rename & Organize",
+  "version": "1.0.0",
+  "description": "Rename tabs with smart URL matching & phpMyAdmin DB detection. Bilingual (EN/FR). Persistent storage for developers.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -18,8 +25,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_end"
     }
   ],
@@ -27,5 +38,7 @@
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
-  }
+  },
+  "author": "Maxime BAUDE (@MaximeCode)",
+  "homepage_url": "https://github.com/MaximeCode/Tab_Renamer"
 }

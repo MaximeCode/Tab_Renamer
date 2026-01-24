@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Tab Name - Screenshot Generator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .screenshot {
+            width: 1280px;
+            height: 800px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screenshot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="white" opacity="0.1"/></svg>');
+            background-size: 50px 50px;
+        }
+
+        .content {
+            text-align: center;
+            color: white;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .tagline {
+            font-size: 28px;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        .popup-mockup {
+            width: 350px;
+            height: 400px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            margin: 40px auto;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: left;
+            color: #333;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .popup-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .lang-toggle {
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .lang-btn.active {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .lang-btn:not(.active) {
+            background: #e8e8e8;
+            color: #666;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .radio-group {
+            margin-bottom: 15px;
+        }
+
+        .radio-label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .radio-option input {
+            margin-right: 8px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .checkbox-group input {
+            margin-right: 8px;
+            margin-top: 2px;
+        }
+
+        .checkbox-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .checkbox-desc {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .screenshot-simple {
+            width: 640px;
+            height: 400px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .instructions {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 1280px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .instructions ol {
+            line-height: 1.8;
+            color: #666;
+        }
+
+        .instructions code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Screenshot 1 : Hero / Main -->
+    <div class="screenshot">
+        <div class="content">
+            <h1>Custom Tab Name</h1>
+            <p class="tagline">Smart Tab Organization for Developers</p>
+
+            <div class="popup-mockup">
+                <div class="popup-header">
+                    <div class="popup-title">Rename this tab</div>
+                    <div class="lang-toggle">
+                        <button class="lang-btn active">FR</button>
+                        <button class="lang-btn">EN</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" class="input-field" placeholder="Enter the new name..."
+                        value="My Project Dashboard">
+                </div>
+
+                <div class="radio-group">
+                    <label class="radio-label">Matching type:</label>
+                    <div class="radio-option">
+                        <input type="radio" name="match" checked>
+                        <span>Exact URL</span>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="match">
+                        <span>URL starts with</span>
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox">
+                    <div>
+                        <div class="checkbox-label">Dev Mode: DB</div>
+                        <div class="checkbox-desc">Parses the URL to link a name to a database and a table.</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">Rename</button>
+                <button class="btn btn-secondary">Reset</button>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Smart Matching</div>
+                    <div class="feature-desc">Exact or prefix URL patterns</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🗄️</div>
+                    <div class="feature-title">phpMyAdmin</div>
+                    <div class="feature-desc">Auto-detect DB & tables</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">Bilingual</div>
+                    <div class="feature-desc">English & Français</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screenshot 2 : Features Focus -->
+    <div class="screenshot" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <div class="content">
+            <h1 style="font-size: 48px;">Perfect for Developers</h1>
+            <div class="features" style="margin-top: 60px;">
+                <div class="feature">
+                    <div class="feature-icon">💻</div>
+                    <div class="feature-title">Localhost Ports</div>
+                    <div class="feature-desc">:3000, :8080, :5000<br>Organize all your dev servers</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🗄️</div>
+                    <div class="feature-title">phpMyAdmin</div>
+                    <div class="feature-desc">DB: users | Table: customers<br>Auto-detection magic</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📦</div>
+                    <div class="feature-title">Multiple Tabs</div>
+                    <div class="feature-desc">Same domain, different names<br>Stay organized</div>
+                </div>
+            </div>
+            <div class="features" style="margin-top: 40px;">
+                <div class="feature">
+                    <div class="feature-icon">💾</div>
+                    <div class="feature-title">Persistent</div>
+                    <div class="feature-desc">Survives browser restarts<br>Never lose your names</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Smart URLs</div>
+                    <div class="feature-desc">Exact or prefix matching<br>Full control</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-title">Private</div>
+                    <div class="feature-desc">100% local storage<br>No data collection</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screenshot 3 : Avant/Après -->
+    <div class="screenshot" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <div class="content">
+            <h1 style="font-size: 48px; margin-bottom: 60px;">Before & After</h1>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+                <div>
+                    <h2 style="font-size: 32px; margin-bottom: 20px;">❌ Before</h2>
+                    <div
+                        style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 18px; margin-bottom: 10px;">📑 localhost:3000/admin/users</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">📑 localhost:8080/api/v1/test</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">📑 phpMyAdmin - 127.0.0.1</div>
+                        <div style="font-size: 18px;">📑 Google Docs - Document1</div>
+                    </div>
+                    <p style="margin-top: 20px; font-size: 20px; opacity: 0.9;">Confusing, generic titles...</p>
+                </div>
+                <div>
+                    <h2 style="font-size: 32px; margin-bottom: 20px;">✅ After</h2>
+                    <div
+                        style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                        <div style="font-size: 18px; margin-bottom: 10px;">🎯 Admin Dashboard</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">🎯 API Testing</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">🎯 DB: ecommerce | Table: users</div>
+                        <div style="font-size: 18px;">🎯 Q4 Budget Report</div>
+                    </div>
+                    <p style="margin-top: 20px; font-size: 20px; opacity: 0.9;">Clear, organized, productive! 🚀</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h2>🎉 Vous avez maintenant 3 screenshots professionnels !</h2>
+        <p>Vous pouvez aussi créer vos propres captures en modifiant le HTML ci-dessus.</p>
+        <p><strong>Prochaine étape :</strong> Téléchargez les images et ajoutez-les à votre listing Chrome Web Store.
+        </p>
+    </div>
+</body>
+
+</html>
