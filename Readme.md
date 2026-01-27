@@ -60,15 +60,28 @@ A powerful Chrome extension for developers and power users. Rename tabs with int
 
 ### Basic Tab Renaming
 
-1. Click the Custom Tab Name extension icon in your toolbar
-2. Enter your desired title in the input field
-3. Choose your matching type:
-   - **"Exact URL"**: Renames only this specific page
-   - **"URL Starts With"**: Renames all pages starting with this URL
-4. Click "Renommer" (Rename) to apply
-5. Your custom title persists across browser sessions!
+Steps to rename a tab:
 
-### Developer Mode: phpMyAdmin
+1. Click the Custom Tab Name extension icon in your toolbar
+2. (Optional) Enable **Mode Dev : DB** if you are on phpMyAdmin
+3. Enter your desired title in the input field
+4. If Dev Mode is **off**, choose your matching type:
+   - **"Exact URL"** or **"URL Starts With"**
+5. Click **Renommer / Rename** to apply
+6. Your custom title persists across browser sessions!
+
+### Matching Hierarchy
+
+The extension always applies matching in this order:
+
+1. **First: Dev Mode (DB)**  
+   - If a phpMyAdmin / DB rule matches (database or database + table), it is used.
+2. **Second: URL rules**  
+   - If no Dev Mode rule matches, URL rules are used:
+     - **"Exact URL"**: Renames only this specific page  
+     - **"URL Starts With"**: Renames all pages starting with this URL
+
+### Developer Mode: phpMyAdmin (DB First)
 
 For phpMyAdmin users:
 

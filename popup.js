@@ -15,12 +15,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const devModeLabel = document.getElementById("devModeLabel");
   const dbModeHint = document.getElementById("dbModeHint");
 
-  // Récupérer l'onglet actif
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  const dbInfo = extractDbTableFromUrl(tab.url);
-  console.log(dbInfo);
-
   // Translations
   const translations = {
     fr: {
@@ -92,17 +86,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Language switcher handlers
   langFrBtn.addEventListener("click", () => updateLanguage("fr"));
   langEnBtn.addEventListener("click", () => updateLanguage("en"));
-  devModeToogle.addEventListener("change", () => {
-    setDbModeEnabled(devModeToogle.checked);
-    if (!tabNameInput.value.trim()) {
-      tabNameInput.value = dbInfo.table;
-    }
-  });
-
-  if (!tab) return;
-
-  const url = tab.url;
-  const originalTitle = tab.title; // Store original title for reset
 
   function extractDbTableFromUrl(rawUrl) {
     try {
@@ -111,10 +94,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const db = params.get("db") || params.get("database");
       const table = params.get("table") || params.get("tablename");
 
-      if (db && table) {
+      if (db) {
         return {
           db,
-          table,
+          table: table || null,
           host: parsedUrl.host,
         };
       }
@@ -126,7 +109,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function buildDbKey(dbInfo) {
-    return `db:${dbInfo.host}:${dbInfo.db}:${dbInfo.table}`;
+    if (dbInfo.table) {
+      return `db:${dbInfo.host}:${dbInfo.db}:${dbInfo.table}`;
+    }
+    return `db:${dbInfo.host}:${dbInfo.db}`;
   }
 
   function setDbModeEnabled(enabled) {
@@ -137,22 +123,53 @@ document.addEventListener("DOMContentLoaded", async () => {
     matchPrefixLabel.style.opacity = enabled ? "0.5" : "1";
   }
 
+  // Récupérer l'onglet actif
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  if (!tab) return;
+
+  const url = tab.url;
+  const originalTitle = tab.title; // Store original title for reset
+  const dbInfo = extractDbTableFromUrl(url);
+
+  devModeToogle.addEventListener("change", () => {
+    setDbModeEnabled(devModeToogle.checked);
+    if (devModeToogle.checked && !tabNameInput.value.trim()) {
+      if (dbInfo?.table) {
+        tabNameInput.value = dbInfo.table;
+      } else if (dbInfo?.db) {
+        tabNameInput.value = dbInfo.db;
+      }
+    }
+  });
+
   // Helper function to find matching entry (same as in background.js)
   function findMatchingEntry(currentUrl, storageData) {
+    const currentDbInfo = extractDbTableFromUrl(currentUrl);
 
     // First, check for DB mode matches
-    if (dbInfo) {
+    if (currentDbInfo) {
+      const dbMatches = [];
       for (const [storedKey, entry] of Object.entries(storageData)) {
         if (storedKey === "language") continue;
         if (!entry || typeof entry !== "object") continue;
 
-        if (entry.mode === "db" && entry.db && entry.table) {
-          const hostMatches = !entry.host || entry.host === dbInfo.host;
-          if (hostMatches && entry.db === dbInfo.db && entry.table === dbInfo.table) {
-            return { url: storedKey, entry: entry };
-          }
+        if (entry.mode === "db" && entry.db) {
+          const hostMatches = !entry.host || entry.host === currentDbInfo.host;
+          if (!hostMatches || entry.db !== currentDbInfo.db) continue;
+          dbMatches.push({ url: storedKey, entry });
         }
       }
+
+      if (currentDbInfo.table) {
+        const tableMatch = dbMatches.find(
+          (match) => match.entry.table && match.entry.table === currentDbInfo.table
+        );
+        if (tableMatch) return tableMatch;
+      }
+
+      const dbOnlyMatch = dbMatches.find((match) => !match.entry.table);
+      if (dbOnlyMatch) return dbOnlyMatch;
     }
 
     // Then, check for exact match

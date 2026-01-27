@@ -5,10 +5,10 @@ function extractDbTableFromUrl(rawUrl) {
     const db = params.get("db") || params.get("database");
     const table = params.get("table") || params.get("tablename");
 
-    if (db && table) {
+    if (db) {
       return {
         db,
-        table,
+        table: table || null,
         host: parsedUrl.host,
       };
     }
@@ -25,17 +25,27 @@ function findMatchingTitle(url, storageData) {
 
   // First, check for DB mode matches
   if (dbInfo) {
+    const dbMatches = [];
     for (const [storedKey, entry] of Object.entries(storageData)) {
       if (storedKey === "language") continue;
       if (!entry || typeof entry !== "object") continue;
 
-      if (entry.mode === "db" && entry.db && entry.table) {
+      if (entry.mode === "db" && entry.db) {
         const hostMatches = !entry.host || entry.host === dbInfo.host;
-        if (hostMatches && entry.db === dbInfo.db && entry.table === dbInfo.table) {
-          return entry.name;
-        }
+        if (!hostMatches || entry.db !== dbInfo.db) continue;
+        dbMatches.push(entry);
       }
     }
+
+    if (dbInfo.table) {
+      const tableMatch = dbMatches.find(
+        (entry) => entry.table && entry.table === dbInfo.table
+      );
+      if (tableMatch?.name) return tableMatch.name;
+    }
+
+    const dbOnlyMatch = dbMatches.find((entry) => !entry.table);
+    if (dbOnlyMatch?.name) return dbOnlyMatch.name;
   }
 
   // Then, check for exact match
