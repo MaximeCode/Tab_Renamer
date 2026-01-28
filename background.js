@@ -5,10 +5,10 @@ function extractDbTableFromUrl(rawUrl) {
     const db = params.get("db") || params.get("database");
     const table = params.get("table") || params.get("tablename");
 
-    if (db && table) {
+    if (db) {
       return {
         db,
-        table,
+        table: table || null,
         host: parsedUrl.host,
       };
     }
@@ -23,37 +23,31 @@ function extractDbTableFromUrl(rawUrl) {
 function findMatchingTitle(url, storageData) {
   const dbInfo = extractDbTableFromUrl(url);
 
-  // First, check for DB mode matches (Dev mode)
-  let dbMatchName = null;
-  let hasAnyDbEntryForDb = false;
-
+  // Dev mode: DB/table-based titles
   if (dbInfo) {
     for (const [storedKey, entry] of Object.entries(storageData)) {
       if (storedKey === "language") continue;
       if (!entry || typeof entry !== "object") continue;
+      if (entry.mode !== "db" || !entry.db) continue;
 
-      if (entry.mode === "db" && entry.db) {
-        const hostMatches = !entry.host || entry.host === dbInfo.host;
+      const hostMatches = !entry.host || entry.host === dbInfo.host;
+      if (!hostMatches || entry.db !== dbInfo.db) continue;
 
-        // Track that there is at least one Dev-mode entry for this DB / host
-        if (hostMatches && entry.db === dbInfo.db) {
-          hasAnyDbEntryForDb = true;
-
-          // Only a perfect (db + table) match should apply on table URLs
-          if (entry.table && entry.table === dbInfo.table) {
-            dbMatchName = entry.name;
-            break;
-          }
+      // If URL targets a specific table, only match entries for that table
+      if (dbInfo.table) {
+        if (entry.table && entry.table === dbInfo.table) {
+          return entry.name;
+        }
+      } else {
+        // URL is DB-only (no table): only match DB-level entries (no table)
+        if (!entry.table) {
+          return entry.name;
         }
       }
     }
   }
 
-  if (dbMatchName) {
-    return dbMatchName;
-  }
-
-  // Then, check for exact match
+  // Exact URL match (normal URL mode)
   if (storageData[url]) {
     const entry = storageData[url];
     // Handle both old format (string) and new format (object)
@@ -64,15 +58,7 @@ function findMatchingTitle(url, storageData) {
     }
   }
 
-  // Dev mode rule:
-  // If the URL targets a specific table (dbInfo != null) and there is at least
-  // one Dev-mode entry for this DB but none for this table,
-  // do NOT fall back to prefix-based renames coming from DB-level URLs.
-  if (dbInfo && hasAnyDbEntryForDb && !dbMatchName) {
-    return null;
-  }
-
-  // Then, check for prefix matches
+  // Prefix matches (normal URL mode)
   for (const [storedUrl, entry] of Object.entries(storageData)) {
     if (storedUrl === "language") continue;
     if (storedUrl === url) continue; // Already checked above

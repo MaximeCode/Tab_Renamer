@@ -15,12 +15,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const devModeLabel = document.getElementById("devModeLabel");
   const dbModeHint = document.getElementById("dbModeHint");
 
-  // Récupérer l'onglet actif
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  const dbInfo = extractDbTableFromUrl(tab.url);
-  console.log(dbInfo);
-
   // Translations
   const translations = {
     fr: {
@@ -92,17 +86,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Language switcher handlers
   langFrBtn.addEventListener("click", () => updateLanguage("fr"));
   langEnBtn.addEventListener("click", () => updateLanguage("en"));
-  devModeToogle.addEventListener("change", () => {
-    setDbModeEnabled(devModeToogle.checked);
-    if (!tabNameInput.value.trim()) {
-      tabNameInput.value = dbInfo.table;
-    }
-  });
-
-  if (!tab) return;
-
-  const url = tab.url;
-  const originalTitle = tab.title; // Store original title for reset
 
   function extractDbTableFromUrl(rawUrl) {
     try {
@@ -111,10 +94,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const db = params.get("db") || params.get("database");
       const table = params.get("table") || params.get("tablename");
 
-      if (db && table) {
+      if (db) {
         return {
           db,
-          table,
+          table: table || null,
           host: parsedUrl.host,
         };
       }
@@ -126,7 +109,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function buildDbKey(dbInfo) {
-    return `db:${dbInfo.host}:${dbInfo.db}:${dbInfo.table}`;
+    if (dbInfo.table) {
+      return `db:${dbInfo.host}:${dbInfo.db}:${dbInfo.table}`;
+    }
+    return `db:${dbInfo.host}:${dbInfo.db}`;
   }
 
   function setDbModeEnabled(enabled) {
@@ -137,48 +123,55 @@ document.addEventListener("DOMContentLoaded", async () => {
     matchPrefixLabel.style.opacity = enabled ? "0.5" : "1";
   }
 
+  // Récupérer l'onglet actif
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  if (!tab) return;
+
+  const url = tab.url;
+  const originalTitle = tab.title; // Store original title for reset
+  const dbInfo = extractDbTableFromUrl(url);
+
+  devModeToogle.addEventListener("change", () => {
+    setDbModeEnabled(devModeToogle.checked);
+    if (devModeToogle.checked && !tabNameInput.value.trim()) {
+      if (dbInfo?.table) {
+        tabNameInput.value = dbInfo.table;
+      } else if (dbInfo?.db) {
+        tabNameInput.value = dbInfo.db;
+      }
+    }
+  });
+
   // Helper function to find matching entry (same Dev-mode logic as in background.js)
   function findMatchingEntry(currentUrl, storageData) {
     // First, check for DB mode matches
-    let dbMatch = null;
-    let hasAnyDbEntryForDb = false;
-
     if (dbInfo) {
       for (const [storedKey, entry] of Object.entries(storageData)) {
         if (storedKey === "language") continue;
         if (!entry || typeof entry !== "object") continue;
+        if (entry.mode !== "db" || !entry.db) continue;
 
-        if (entry.mode === "db" && entry.db) {
-          const hostMatches = !entry.host || entry.host === dbInfo.host;
+        const hostMatches = !entry.host || entry.host === dbInfo.host;
+        if (!hostMatches || entry.db !== dbInfo.db) continue;
 
-          if (hostMatches && entry.db === dbInfo.db) {
-            hasAnyDbEntryForDb = true;
-
-            // Only a perfect (db + table) match should apply on table URLs
-            if (entry.table && entry.table === dbInfo.table) {
-              dbMatch = { url: storedKey, entry: entry };
-              break;
-            }
+        // If URL targets a specific table, only match entries for that table
+        if (dbInfo.table) {
+          if (entry.table && entry.table === dbInfo.table) {
+            return { url: storedKey, entry: entry };
+          }
+        } else {
+          // URL is DB-only (no table): only match DB-level entries (no table)
+          if (!entry.table) {
+            return { url: storedKey, entry: entry };
           }
         }
       }
     }
 
-    if (dbMatch) {
-      return dbMatch;
-    }
-
     // Then, check for exact match
     if (storageData[currentUrl]) {
       return { url: currentUrl, entry: storageData[currentUrl] };
-    }
-
-    // Dev mode rule:
-    // If the URL targets a specific table (dbInfo != null) and there is at least
-    // one Dev-mode entry for this DB but none for this table,
-    // do NOT fall back to prefix-based renames coming from DB-level URLs.
-    if (dbInfo && hasAnyDbEntryForDb && !dbMatch) {
-      return null;
     }
 
     // Then, check for prefix matches
