@@ -137,27 +137,48 @@ document.addEventListener("DOMContentLoaded", async () => {
     matchPrefixLabel.style.opacity = enabled ? "0.5" : "1";
   }
 
-  // Helper function to find matching entry (same as in background.js)
+  // Helper function to find matching entry (same Dev-mode logic as in background.js)
   function findMatchingEntry(currentUrl, storageData) {
-
     // First, check for DB mode matches
+    let dbMatch = null;
+    let hasAnyDbEntryForDb = false;
+
     if (dbInfo) {
       for (const [storedKey, entry] of Object.entries(storageData)) {
         if (storedKey === "language") continue;
         if (!entry || typeof entry !== "object") continue;
 
-        if (entry.mode === "db" && entry.db && entry.table) {
+        if (entry.mode === "db" && entry.db) {
           const hostMatches = !entry.host || entry.host === dbInfo.host;
-          if (hostMatches && entry.db === dbInfo.db && entry.table === dbInfo.table) {
-            return { url: storedKey, entry: entry };
+
+          if (hostMatches && entry.db === dbInfo.db) {
+            hasAnyDbEntryForDb = true;
+
+            // Only a perfect (db + table) match should apply on table URLs
+            if (entry.table && entry.table === dbInfo.table) {
+              dbMatch = { url: storedKey, entry: entry };
+              break;
+            }
           }
         }
       }
     }
 
+    if (dbMatch) {
+      return dbMatch;
+    }
+
     // Then, check for exact match
     if (storageData[currentUrl]) {
       return { url: currentUrl, entry: storageData[currentUrl] };
+    }
+
+    // Dev mode rule:
+    // If the URL targets a specific table (dbInfo != null) and there is at least
+    // one Dev-mode entry for this DB but none for this table,
+    // do NOT fall back to prefix-based renames coming from DB-level URLs.
+    if (dbInfo && hasAnyDbEntryForDb && !dbMatch) {
+      return null;
     }
 
     // Then, check for prefix matches

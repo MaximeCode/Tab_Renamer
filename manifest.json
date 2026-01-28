@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Custom Tab Name - Smart Rename & Organize",
+  "name": "Custom Tab Name - Smart Rename & Organize | BÊTA",
   "version": "1.0.0",
-  "description": "Rename tabs with smart URL matching & phpMyAdmin DB detection. Bilingual (EN/FR). Persistent storage for developers.",
+  "description": "Rename tabs with smart URL matching & phpMyAdmin DB detection. Bilingual (EN/FR) | CETTE EXTENSION EST POUR LES TESTS BÊTA",
   "permissions": [
     "storage",
     "activeTab",

@@ -177,3 +177,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Made with ❤️ by [Maxime BAUDE](https://github.com/MaximeCode)
 
 If you find this extension helpful, consider ⭐ starring the repository!
+
+---
+Right desc : Rename tabs with smart URL matching & phpMyAdmin DB detection. Bilingual (EN/FR). Persistent storage for developers.

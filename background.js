@@ -23,19 +23,34 @@ function extractDbTableFromUrl(rawUrl) {
 function findMatchingTitle(url, storageData) {
   const dbInfo = extractDbTableFromUrl(url);
 
-  // First, check for DB mode matches
+  // First, check for DB mode matches (Dev mode)
+  let dbMatchName = null;
+  let hasAnyDbEntryForDb = false;
+
   if (dbInfo) {
     for (const [storedKey, entry] of Object.entries(storageData)) {
       if (storedKey === "language") continue;
       if (!entry || typeof entry !== "object") continue;
 
-      if (entry.mode === "db" && entry.db && entry.table) {
+      if (entry.mode === "db" && entry.db) {
         const hostMatches = !entry.host || entry.host === dbInfo.host;
-        if (hostMatches && entry.db === dbInfo.db && entry.table === dbInfo.table) {
-          return entry.name;
+
+        // Track that there is at least one Dev-mode entry for this DB / host
+        if (hostMatches && entry.db === dbInfo.db) {
+          hasAnyDbEntryForDb = true;
+
+          // Only a perfect (db + table) match should apply on table URLs
+          if (entry.table && entry.table === dbInfo.table) {
+            dbMatchName = entry.name;
+            break;
+          }
         }
       }
     }
+  }
+
+  if (dbMatchName) {
+    return dbMatchName;
   }
 
   // Then, check for exact match
@@ -47,6 +62,14 @@ function findMatchingTitle(url, storageData) {
     } else if (entry.name) {
       return entry.name;
     }
+  }
+
+  // Dev mode rule:
+  // If the URL targets a specific table (dbInfo != null) and there is at least
+  // one Dev-mode entry for this DB but none for this table,
+  // do NOT fall back to prefix-based renames coming from DB-level URLs.
+  if (dbInfo && hasAnyDbEntryForDb && !dbMatchName) {
+    return null;
   }
 
   // Then, check for prefix matches
