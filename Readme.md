@@ -74,11 +74,11 @@ Steps to rename a tab:
 
 The extension always applies matching in this order:
 
-1. **First: Dev Mode (DB)**  
+1. **First: Dev Mode (DB)**
    - If a phpMyAdmin / DB rule matches (database or database + table), it is used.
-2. **Second: URL rules**  
+2. **Second: URL rules**
    - If no Dev Mode rule matches, URL rules are used:
-     - **"Exact URL"**: Renames only this specific page  
+     - **"Exact URL"**: Renames only this specific page
      - **"URL Starts With"**: Renames all pages starting with this URL
 
 ### Developer Mode: phpMyAdmin
@@ -192,4 +192,5 @@ Made with ❤️ by [Maxime BAUDE](https://github.com/MaximeCode)
 If you find this extension helpful, consider ⭐ starring the repository!
 
 ---
+
 Right desc : Rename tabs with smart URL matching & phpMyAdmin DB detection. Bilingual (EN/FR). Persistent storage for developers.

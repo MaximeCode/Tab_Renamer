@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const devModeToogle = document.getElementById("devModeToogle");
   const devModeLabel = document.getElementById("devModeLabel");
   const dbModeHint = document.getElementById("dbModeHint");
+  const dbModeWarning = document.getElementById("dbModeWarning");
+  const dbModeWarningText = document.getElementById("dbModeWarningText");
 
   // Translations
   const translations = {
@@ -32,6 +34,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Analyse l'URL pour associer un nom à une base de données et une table.",
       dbModeMissing:
         "❌ Mode DB indisponible : base de données ou table introuvable dans l'URL.",
+      dbModeWarningNotDb:
+        "Cette page ne semble pas être un outil type phpMyAdmin (pas de db=, table=, etc. dans l'URL). Le mode Dev : DB ne pourra pas être appliqué.",
     },
     en: {
       title: "Rename this tab",
@@ -48,6 +52,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Analyze the URL to associate a name with a database and a table.",
       dbModeMissing:
         "❌ DB mode unavailable: database or table not found in the URL.",
+      dbModeWarningNotDb:
+        "This page doesn't look like a DB admin tool (no db=, table=, etc. in the URL). Dev mode: DB cannot be applied.",
     },
   };
 
@@ -74,6 +80,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     matchPrefixLabel.textContent = t.matchPrefix;
     devModeLabel.textContent = t.devModeLabel;
     dbModeHint.textContent = t.dbModeHint;
+    if (dbModeWarning.classList.contains("visible")) {
+      dbModeWarningText.textContent = t.dbModeWarningNotDb;
+    }
 
     // Update language buttons
     langFrBtn.classList.toggle("active", lang === "fr");
@@ -123,6 +132,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     matchPrefixLabel.style.opacity = enabled ? "0.5" : "1";
   }
 
+  function updateDbModeWarning() {
+    const show = devModeToogle.checked && !dbInfo;
+    dbModeWarning.classList.toggle("visible", show);
+    if (show) {
+      dbModeWarningText.textContent = translations[currentLang].dbModeWarningNotDb;
+    }
+  }
+
   // Récupérer l'onglet actif
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -141,6 +158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         tabNameInput.value = dbInfo.db;
       }
     }
+    updateDbModeWarning();
   });
 
   // Helper function to find matching entry (same Dev-mode logic as in background.js)
@@ -221,7 +239,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
       }
+    } else if (dbInfo) {
+      // No stored entry but URL has db/table params → pre-check Mode Dev : DB
+      devModeToogle.checked = true;
+      setDbModeEnabled(true);
+      if (!tabNameInput.value.trim()) {
+        tabNameInput.value = dbInfo.table || dbInfo.db;
+      }
     }
+    updateDbModeWarning();
     tabNameInput.select();
   });
 

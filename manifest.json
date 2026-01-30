@@ -3,15 +3,8 @@
   "name": "Custom Tab Name - Smart Rename & Organize | BÊTA",
   "version": "1.0.0",
   "description": "Rename tabs with smart URL matching & phpMyAdmin DB detection. Bilingual (EN/FR) | CETTE EXTENSION EST POUR LES TESTS BÊTA",
-  "permissions": [
-    "storage",
-    "activeTab",
-    "tabs",
-    "scripting"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["storage", "activeTab", "tabs", "scripting"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -25,12 +18,8 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "content.js"
-      ],
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
       "run_at": "document_end"
     }
   ],
