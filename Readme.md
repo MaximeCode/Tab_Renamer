@@ -1,6 +1,6 @@
 # 🏷️ Advanced Tab Renamer - Custom Names & Database Detection
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue)](https://chrome.google.com/webstore/detail/tab-renamer/your-extension-id)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue)](https://chromewebstore.google.com/detail/custom-tab-name-smart-ren/lldbgogjfhiolnngankgodpjhbdijgoe)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/MaximeCode/Tab_Renamer?style=social)](https://github.com/MaximeCode/Tab_Renamer)
 
@@ -46,7 +46,7 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 
 ### From Chrome Web Store (Recommended)
 
-1. Visit the [Chrome Web Store page](#)
+1. Visit the [Chrome Web Store page](https://chromewebstore.google.com/detail/custom-tab-name-smart-ren/lldbgogjfhiolnngankgodpjhbdijgoe)
 2. Click "Add to Chrome"
 3. Confirm the installation
 4. You're ready to go!
@@ -186,7 +186,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/MaximeCode/Tab_Renamer/issues)
 - **Email**: [contact.mbaude@gmail.com]
-- **Chrome Web Store**: [Leave a review](#)
+- **Chrome Web Store**: [Leave a review](https://chromewebstore.google.com/detail/custom-tab-name-smart-ren/lldbgogjfhiolnngankgodpjhbdijgoe)
 
 ---
 
