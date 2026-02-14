@@ -1,16 +1,16 @@
-# Privacy Policy - Custom Tab Name
+# Privacy Policy - Advanced Tab Renamer
 
 **Last Updated:** January 25, 2026
 
 ## Introduction
 
-Custom Tab Name ("we", "our", or "the extension") is committed to protecting your privacy. This Privacy Policy explains how our Chrome extension handles your data.
+Advanced Tab Renamer ("we", "our", or "the extension") is committed to protecting your privacy. This Privacy Policy explains how our Chrome extension handles your data.
 
 ## Data Collection
 
 **We do NOT collect any personal data.**
 
-Custom Tab Name does not:
+Advanced Tab Renamer does not:
 
 - Collect any personal information
 - Track your browsing history
@@ -36,7 +36,7 @@ All data is stored using Chrome's **Sync Storage API**, which means:
 
 - Data is stored in your Chrome browser profile
 - Data can sync across your devices if you're signed into Chrome with sync enabled
-- Data is stored locally in: `DevTools → Application → Storage → Extension storage → Custom Tab Name`
+- Data is stored locally in: `DevTools → Application → Storage → Extension storage → Advanced Tab Renamer`
 - **No external servers are involved**
 
 ### Data Retention
@@ -113,7 +113,7 @@ Our extension does not knowingly collect information from children under 13 year
 
 ## Open Source
 
-Custom Tab Name is open source software:
+Advanced Tab Renamer is open source software:
 
 - Source code is available on GitHub: [github.com/MaximeCode/Tab_Renamer](https://github.com/MaximeCode/Tab_Renamer)
 - You can review the code to verify our privacy claims
@@ -126,7 +126,7 @@ You have complete control over your data:
 ### Access Your Data
 
 - View all stored tab names in Chrome DevTools:
-  - Press F12 → Application tab → Storage → Extension storage → Custom Tab Name
+  - Press F12 → Application tab → Storage → Extension storage → Advanced Tab Renamer
 
 ### Delete Your Data
 
@@ -158,7 +158,7 @@ Since we don't collect or store data on external servers, there is no risk of a 
 If you have questions about this Privacy Policy:
 
 - **GitHub Issues:** [github.com/MaximeCode/Tab_Renamer/issues](https://github.com/MaximeCode/Tab_Renamer/issues)
-- **Email:** [contact.mbaude@gmail.com]
+- **Email:** [contact.mbaude@gmail.com](mailto:contact.mbaude@gmail.com)
 - **Chrome Web Store:** Leave a comment on the extension page
 
 ## Legal Basis (GDPR Compliance)
@@ -187,5 +187,5 @@ For users in the European Union:
 
 ---
 
-**Custom Tab Name**
-by Maxime BAUDE (@MaximeCode)
+**Advanced Tab Renamer**
+by Maxime BAUDE (@MaximeCode on GitHub)

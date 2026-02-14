@@ -1,10 +1,10 @@
-# 🔄 Custom Tab Name - Smart Tab Organizer
+# 🏷️ Advanced Tab Renamer - Custom Names & Database Detection
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-blue)](https://chrome.google.com/webstore/detail/tab-renamer/your-extension-id)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/MaximeCode/Tab_Renamer?style=social)](https://github.com/MaximeCode/Tab_Renamer)
 
-A powerful Chrome extension for developers and power users. Rename tabs with intelligent URL matching, phpMyAdmin database detection, and bilingual support (EN/FR).
+Advanced tab renaming with URL patterns & database detection. Persistent storage. Bilingual (EN/FR). For developers & power users.
 
 ## ✨ Features
 
@@ -38,6 +38,10 @@ A powerful Chrome extension for developers and power users. Rename tabs with int
 - Clear radio buttons for matching type selection
 - One-click reset functionality
 
+## Version 1.0.1
+
+- Database detection added, when you are on a phpMyAdmin page, the extension will automatically detect the database and table names and propose to rename the tab accordingly.
+
 ## 🚀 Installation
 
 ### From Chrome Web Store (Recommended)
@@ -60,26 +64,13 @@ A powerful Chrome extension for developers and power users. Rename tabs with int
 
 ### Basic Tab Renaming
 
-Steps to rename a tab:
-
-1. Click the Custom Tab Name extension icon in your toolbar
-2. (Optional) Enable **Mode Dev : DB** if you are on phpMyAdmin
-3. Enter your desired title in the input field
-4. If Dev Mode is **off**, choose your matching type:
-   - **"Exact URL"** or **"URL Starts With"**
-5. Click **Renommer / Rename** to apply
-6. Your custom title persists across browser sessions!
-
-### Matching Hierarchy
-
-The extension always applies matching in this order:
-
-1. **First: Dev Mode (DB)**
-   - If a phpMyAdmin / DB rule matches (database or database + table), it is used.
-2. **Second: URL rules**
-   - If no Dev Mode rule matches, URL rules are used:
-     - **"Exact URL"**: Renames only this specific page
-     - **"URL Starts With"**: Renames all pages starting with this URL
+1. Click the Advanced Tab Renamer extension icon in your toolbar
+2. Enter your custom title in the input field
+3. Choose matching type:
+   - **"Exact URL"** (URL exacte) - for this specific page only
+   - **"URL Starts With"** (URL commence par) - for all pages under this path
+4. Click "Renommer" (Rename) - done!
+5. Your custom title appears immediately and persists forever
 
 ### Developer Mode: phpMyAdmin
 
@@ -115,6 +106,13 @@ For phpMyAdmin users:
 - Admin panels: "Client A Dashboard", "Client B Analytics"
 - Research tabs: "AI Research", "Competition Analysis"
 
+**For Professionals:**
+
+- Screenshot preparation: Rename tabs for clean, professional captures
+- Client presentations: Remove technical URLs from visible tabs
+- Training materials: Label tabs with clear, descriptive names
+- Multi-account management: Distinguish between different user sessions
+
 **URL Matching Examples:**
 
 | Original URL               | Matching Type | New Name       | Result                         |
@@ -137,10 +135,12 @@ tab-renamer/
 ├── content.js          # Content script for web pages
 ├── popup.html          # Popup UI markup
 ├── popup.js            # Popup UI logic
+├── template.html       # Template for the popup
 ├── icon16.png          # Extension icon (16x16)
 ├── icon48.png          # Extension icon (48x48)
 ├── icon128.png         # Extension icon (128x128)
 ├── LICENSE             # MIT License
+├── PRIVACY.md          # Privacy Policy
 └── README.md           # This file
 ```
 
@@ -163,12 +163,14 @@ Contributions are welcome! Please follow these steps:
 
 ## 🔒 Privacy Policy
 
-Custom Tab Name respects your privacy:
+Advanced Tab Renamer respects your privacy:
 
 - **No data collection**: We don't collect any personal information
 - **No external servers**: All data is stored locally on your device
 - **No tracking**: No analytics or tracking scripts
 - **Open source**: You can review all the code on GitHub
+
+Full privacy policy available at: [PRIVACY.md](PRIVACY.md)
 
 ## 📄 License
 
@@ -177,7 +179,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Thanks to all contributors who help improve this extension
-- Inspired by the need for better tab organization
+- Built for developers, by a developer
+- Inspired by the need for better tab organization in modern workflows
 
 ## 📧 Support
 
@@ -191,6 +194,4 @@ Made with ❤️ by [Maxime BAUDE](https://github.com/MaximeCode)
 
 If you find this extension helpful, consider ⭐ starring the repository!
 
----
-
-Right desc : Rename tabs with smart URL matching & phpMyAdmin DB detection. Bilingual (EN/FR). Persistent storage for developers.
+**Advanced Tab Renamer** - Professional tab organization for developers and power users.
