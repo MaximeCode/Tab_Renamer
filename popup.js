@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const matchTypeLabel = document.getElementById("matchTypeLabel");
   const matchExactLabel = document.getElementById("matchExactLabel");
   const matchPrefixLabel = document.getElementById("matchPrefixLabel");
+  const matchExactValue = document.getElementById("matchExactValue");
+  const matchPrefixValue = document.getElementById("matchPrefixValue");
   const devModeToogle = document.getElementById("devModeToogle");
   const devModeLabel = document.getElementById("devModeLabel");
   const dbModeHint = document.getElementById("dbModeHint");
@@ -96,6 +98,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   langFrBtn.addEventListener("click", () => updateLanguage("fr"));
   langEnBtn.addEventListener("click", () => updateLanguage("en"));
 
+  // Toggle visibility of match exact value
+  matchExactRadio.addEventListener("change", () => {
+    matchExactValue.type = matchExactRadio.checked ? "text" : "hidden";
+    matchPrefixValue.type = matchPrefixRadio.checked ? "text" : "hidden";
+  });
+
+  // Toggle visibility of match prefix value
+  matchPrefixRadio.addEventListener("change", () => {
+    matchExactValue.type = matchExactRadio.checked ? "text" : "hidden";
+    matchPrefixValue.type = matchPrefixRadio.checked ? "text" : "hidden";
+  });
+
   function extractDbTableFromUrl(rawUrl) {
     try {
       const parsedUrl = new URL(rawUrl);
@@ -148,6 +162,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const url = tab.url;
   const originalTitle = tab.title; // Store original title for reset
   const dbInfo = extractDbTableFromUrl(url);
+
+  // Pre-fill the exact URL input with the current tab's URL
+  matchExactValue.value = url;
+  matchPrefixValue.value = url;
+  // Initially show exact URL input (since matchExact is checked by default)
+  matchExactValue.type = "text";
+  matchPrefixValue.type = "hidden";
 
   devModeToogle.addEventListener("change", () => {
     setDbModeEnabled(devModeToogle.checked);
@@ -217,10 +238,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const match = findMatchingEntry(url, result);
     if (match) {
       const entry = match.entry;
+      const storedUrl = match.url;
       // Handle both old format (string) and new format (object)
       if (typeof entry === "string") {
         tabNameInput.value = entry;
         matchExactRadio.checked = true; // Default to exact for old entries
+        matchExactValue.value = storedUrl;
+        matchExactValue.type = "text";
+        matchPrefixValue.type = "hidden";
         devModeToogle.checked = false;
         setDbModeEnabled(false);
       } else if (entry.name) {
@@ -234,8 +259,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           const matchType = entry.matchType || "exact";
           if (matchType === "prefix") {
             matchPrefixRadio.checked = true;
+            matchPrefixValue.value = storedUrl;
+            matchPrefixValue.type = "text";
+            matchExactValue.type = "hidden";
           } else {
             matchExactRadio.checked = true;
+            matchExactValue.value = storedUrl;
+            matchExactValue.type = "text";
+            matchPrefixValue.type = "hidden";
           }
         }
       }
@@ -307,6 +338,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Get selected match type
     const matchType = matchExactRadio.checked ? "exact" : "prefix";
 
+    // Get the URL to use based on match type
+    let urlToSave = url; // Default to current tab URL
+    if (matchType === "exact" && matchExactValue.value.trim()) {
+      urlToSave = matchExactValue.value.trim();
+    } else if (matchType === "prefix" && matchPrefixValue.value.trim()) {
+      urlToSave = matchPrefixValue.value.trim();
+    }
+
     // Sauvegarder dans le storage avec le type de correspondance
     const dataToSave = {
       name: newName,
@@ -314,7 +353,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       mode: "url",
     };
 
-    chrome.storage.sync.set({ [url]: dataToSave }, () => {
+    chrome.storage.sync.set({ [urlToSave]: dataToSave }, () => {
       // Changer le titre immédiatement
       chrome.scripting.executeScript({
         target: { tabId: tab.id },

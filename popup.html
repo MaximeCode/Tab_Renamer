@@ -168,6 +168,18 @@
       margin: 0;
     }
 
+    #matchExactValue,
+    #matchPrefixValue {
+      margin-top: 6px;
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+
+    #matchExactValue[type="hidden"],
+    #matchPrefixValue[type="hidden"] {
+      display: none;
+    }
+
     .db-mode-container {
       margin-bottom: 12px;
       padding: 10px;
@@ -234,10 +246,12 @@
         <input type="radio" id="matchExact" name="matchType" value="exact" checked />
         <label for="matchExact" id="matchExactLabel">URL exacte</label>
       </div>
+      <input type="text" id="matchExactValue" value="" placeholder="URL exacte à renommer..." />
       <div class="radio-option">
         <input type="radio" id="matchPrefix" name="matchType" value="prefix" />
         <label for="matchPrefix" id="matchPrefixLabel">URL commence par</label>
       </div>
+      <input type="text" id="matchPrefixValue" value="" placeholder="URL commence par..." />
     </div>
   </div>
   <div class="db-mode-container">

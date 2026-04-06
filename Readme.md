@@ -10,8 +10,9 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 
 ### 🎯 Smart URL Matching
 
-- **Exact URL Match**: Rename only the specific page
-- **URL Starts With**: Apply custom names to all pages under a path
+- **Exact URL Match**: Rename only the specific page (customizable URL input)
+- **URL Starts With**: Apply custom names to all pages under a path (customizable prefix input)
+- **Custom URL Targeting**: Specify any URL, not just the current tab
 - Perfect for organizing multiple tabs from the same domain
 
 ### 🗄️ Developer Mode: phpMyAdmin Integration
@@ -37,6 +38,10 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 - Modern, intuitive popup interface
 - Clear radio buttons for matching type selection
 - One-click reset functionality
+
+## Version 1.0.2
+
+- **Custom URL Input**: You can now specify any URL for both "Exact URL" and "URL Starts With" modes. Previously, you were limited to the current tab's URL. Now, input fields allow you to customize the exact URL or prefix to match, giving you full control over which tabs get renamed.
 
 ## Version 1.0.1
 
@@ -68,7 +73,11 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 2. Enter your custom title in the input field
 3. Choose matching type:
    - **"Exact URL"** (URL exacte) - for this specific page only
+     - The URL input field below shows the current tab's URL by default
+     - You can modify it to target any specific URL you want
    - **"URL Starts With"** (URL commence par) - for all pages under this path
+     - Input your desired URL prefix in the field below
+     - All URLs starting with this prefix will be renamed
 4. Click "Renommer" (Rename) - done!
 5. Your custom title appears immediately and persists forever
 
@@ -115,12 +124,13 @@ For phpMyAdmin users:
 
 **URL Matching Examples:**
 
-| Original URL               | Matching Type | New Name       | Result                         |
-| -------------------------- | ------------- | -------------- | ------------------------------ |
-| `localhost:3000/admin`     | Exact         | "Admin Panel"  | Only `/admin` renamed          |
-| `localhost:3000`           | Starts With   | "Dev Server"   | All `localhost:3000/*` renamed |
-| `docs.google.com/d/abc123` | Exact         | "Project Plan" | Only this doc renamed          |
-| `github.com/MaximeCode`    | Starts With   | "My GitHub"    | All your repos renamed         |
+| Target URL                 | Matching Type | Custom URL Input           | New Name       | Result                         |
+| -------------------------- | ------------- | -------------------------- | -------------- | ------------------------------ |
+| `localhost:3000/admin`     | Exact         | `localhost:3000/admin`     | "Admin Panel"  | Only `/admin` renamed          |
+| `localhost:3000`           | Starts With   | `localhost:3000`           | "Dev Server"   | All `localhost:3000/*` renamed |
+| `docs.google.com/d/abc123` | Exact         | `docs.google.com/d/abc123` | "Project Plan" | Only this doc renamed          |
+| `github.com/MaximeCode`    | Starts With   | `github.com/MaximeCode`    | "My GitHub"    | All your repos renamed         |
+| Any tab                    | Exact         | `example.com/page`         | "Custom"       | Renames `example.com/page`     |
 
 ## 🛠️ Development
 
