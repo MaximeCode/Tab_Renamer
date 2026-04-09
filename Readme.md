@@ -10,9 +10,10 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 
 ### 🎯 Smart URL Matching
 
-- **Exact URL Match**: Rename only the specific page (customizable URL input)
-- **URL Starts With**: Apply custom names to all pages under a path (customizable prefix input)
-- **Custom URL Targeting**: Specify any URL, not just the current tab
+- **Exact URL**: One page only — the field under the option is prefilled with the current tab URL but you can edit it to target any full URL
+- **URL Starts With**: Every URL whose address starts with your prefix — same editable field (prefilled, customizable)
+- **Regex**: Dedicated pattern field; invalid patterns are blocked before save (JavaScript `RegExp` syntax)
+- **Match order**: Exact URL first, then Regex, then Dev DB mode, then prefix — so explicit rules win over broader ones
 - Perfect for organizing multiple tabs from the same domain
 
 ### 🗄️ Developer Mode: phpMyAdmin Integration
@@ -29,9 +30,18 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 
 ### 💾 Persistent Storage
 
-- **Browser Storage**: All custom names saved locally
-- **Survives Restarts**: Names persist across browser sessions
+- **Rename rules** (`chrome.storage.sync`): Exact, prefix, regex, and DB-mode entries — synced across signed-in Chrome profiles where sync is enabled
+- **Page helper** (`content.js`): Uses `chrome.storage.local` for a fast per-page cache; also resolves rules from sync (regex, prefix, DB) when there is no local exact entry
+- **Survives Restarts**: Rules persist across browser sessions
 - **No Data Loss**: Reliable Chrome storage API
+
+### 🔄 Titles on dynamic sites (GitHub, phpMyAdmin, SPAs)
+
+Many sites change `document.title` after load. The extension reapplies your name by:
+
+- **Background**: After navigation or tab switch, looks up the matching rule and applies the title (message to the content script when available, otherwise injected script)
+- **Enforcement**: A `MutationObserver` on the document plus a light periodic check so late title updates from the page do not permanently override your custom name
+- **Reset**: Clearing a rule disconnects that enforcement so the tab can show the site’s title again
 
 ### 🎨 Clean UI
 
@@ -41,7 +51,12 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 
 ## Version 1.0.2
 
-- **Custom URL Input**: You can now specify any URL for both "Exact URL" and "URL Starts With" modes. Previously, you were limited to the current tab's URL. Now, input fields allow you to customize the exact URL or prefix to match, giving you full control over which tabs get renamed.
+- **Custom URL fields**: Separate inputs for Exact URL and “URL starts with”, prefilled with the active tab’s URL but editable so you can target another address or prefix without switching tabs first.
+- **Regex match type**: Third radio option with its own pattern field; patterns are validated before save.
+- **Match priority**: Exact URL → Regex → Dev DB mode → Prefix, so a saved regex is not shadowed by DB auto-rules when both could apply.
+- **Stronger title persistence**: Background + content script re-apply custom titles when sites update the tab title after load (common on GitHub, phpMyAdmin, and other SPAs).
+- **Content script alignment**: `content.js` mirrors the same matching logic as the background worker and reads sync storage for regex / prefix / DB rules when no per-page local entry exists.
+- **Manifest**: Extension version bumped to **1.0.2**.
 
 ## Version 1.0.1
 
@@ -71,15 +86,38 @@ Advanced tab renaming with URL patterns & database detection. Persistent storage
 
 1. Click the Advanced Tab Renamer extension icon in your toolbar
 2. Enter your custom title in the input field
-3. Choose matching type:
-   - **"Exact URL"** (URL exacte) - for this specific page only
-     - The URL input field below shows the current tab's URL by default
-     - You can modify it to target any specific URL you want
-   - **"URL Starts With"** (URL commence par) - for all pages under this path
-     - Input your desired URL prefix in the field below
-     - All URLs starting with this prefix will be renamed
-4. Click "Renommer" (Rename) - done!
-5. Your custom title appears immediately and persists forever
+3. Choose matching type and adjust the field under it if needed:
+   - **"Exact URL"** (URL exacte) — full URL must match the value in the input (default: current tab)
+   - **"URL Starts With"** (URL commence par) — tab URL must start with the prefix in the input (default: current tab)
+   - **"Regex"** — tab URL must match the JavaScript regular expression you type in the regex field
+4. Click **Renommer** / **Rename**
+5. The new title applies immediately and is kept after refresh and when the site changes the title again
+
+### Using Regex Patterns (Advanced)
+
+Regex (regular expressions) allow powerful pattern matching for complex URL structures:
+
+**How to use:**
+
+1. Select the "Regex" radio option
+2. An input field appears below
+3. Enter your regex pattern (e.g., `localhost:\d+`)
+4. Click "Renommer" to save
+
+**Example patterns:**
+
+- `^https:\/\/github\.com\/YourOrg\/[^\/]+\/?$` — e.g. one custom name for `https://github.com/YourOrg/Project-A`, `…/Project-B`, etc.
+- `https://github\.com/.*/issues` - Match any GitHub issues page (list or specific issue)
+- `localhost:\d+` - Match any localhost port (3000, 8080, etc.)
+- `.*\.(jpg|png|gif)$` - Match any image file URL
+- `https://.*\.example\.com` - Match any subdomain of example.com
+- `phpmyadmin.*[?&]db=production(&|$)` - Match phpMyAdmin production database pages
+
+**Validation:**
+
+- The extension validates your pattern before saving
+- Invalid regex shows: "❌ Expression régulière invalide"
+- Pattern must be valid JavaScript regex syntax
 
 ### Developer Mode: phpMyAdmin
 
@@ -124,13 +162,15 @@ For phpMyAdmin users:
 
 **URL Matching Examples:**
 
-| Target URL                 | Matching Type | Custom URL Input           | New Name       | Result                         |
-| -------------------------- | ------------- | -------------------------- | -------------- | ------------------------------ |
-| `localhost:3000/admin`     | Exact         | `localhost:3000/admin`     | "Admin Panel"  | Only `/admin` renamed          |
-| `localhost:3000`           | Starts With   | `localhost:3000`           | "Dev Server"   | All `localhost:3000/*` renamed |
-| `docs.google.com/d/abc123` | Exact         | `docs.google.com/d/abc123` | "Project Plan" | Only this doc renamed          |
-| `github.com/MaximeCode`    | Starts With   | `github.com/MaximeCode`    | "My GitHub"    | All your repos renamed         |
-| Any tab                    | Exact         | `example.com/page`         | "Custom"       | Renames `example.com/page`     |
+| Matching Type   | Pattern/URL                                      | New Name        | Result                            |
+| --------------- | ------------------------------------------------ | --------------- | --------------------------------- |
+| Exact URL       | Current tab URL                                  | "Admin Panel"   | Only current tab renamed          |
+| URL Starts With | Current tab URL                                  | "Dev Server"    | All URLs with same prefix renamed |
+| Regex           | `localhost:\d+`                                  | "Local Dev"     | Matches `localhost:3000`, `:8080` |
+| Regex           | `github\.com/.*/issues`                          | "GitHub Issues" | All GitHub issues pages           |
+| Regex           | `phpmyadmin.*[?&]db=test1`                       | "DB: test1"     | phpMyAdmin test1 database pages   |
+| Regex           | `.*\.(jpg\|png\|gif)$`                           | "Image"         | All image URLs                    |
+| Regex           | `^https:\/\/github\.com\/user\/repo\/[^\/]+\/?$` | "My repo"       | Repo root + one path segment      |
 
 ## 🛠️ Development
 
@@ -145,7 +185,7 @@ tab-renamer/
 ├── content.js          # Content script for web pages
 ├── popup.html          # Popup UI markup
 ├── popup.js            # Popup UI logic
-├── template.html       # Template for the popup
+├── template.html       # Layout reference / Chrome Web Store screenshot template
 ├── icon16.png          # Extension icon (16x16)
 ├── icon48.png          # Extension icon (48x48)
 ├── icon128.png         # Extension icon (128x128)

@@ -1,3 +1,48 @@
+// Inject the custom title and keep it persistent on dynamic pages
+function applyAndPersistTitle(tabId, title) {
+  chrome.scripting.executeScript({
+    target: { tabId },
+    func: (customTitle) => {
+      const stateKey = "__tabRenamerState";
+      const state = window[stateKey] || {};
+
+      if (state.observer) {
+        state.observer.disconnect();
+      }
+      if (state.intervalId) {
+        clearInterval(state.intervalId);
+      }
+
+      const enforceTitle = () => {
+        if (document.title !== customTitle) {
+          document.title = customTitle;
+        }
+      };
+
+      enforceTitle();
+
+      const obs = new MutationObserver(() => {
+        enforceTitle();
+      });
+
+      obs.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+      });
+
+      const intervalId = setInterval(enforceTitle, 1000);
+
+      window[stateKey] = {
+        customTitle,
+        observer: obs,
+        intervalId,
+      };
+    },
+    args: [title],
+  }).catch(() => { });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const tabNameInput = document.getElementById("tabName");
   const renameBtn = document.getElementById("renameBtn");
@@ -8,11 +53,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const langEnBtn = document.getElementById("langEn");
   const matchExactRadio = document.getElementById("matchExact");
   const matchPrefixRadio = document.getElementById("matchPrefix");
+  const matchRegexRadio = document.getElementById("matchRegex");
   const matchTypeLabel = document.getElementById("matchTypeLabel");
   const matchExactLabel = document.getElementById("matchExactLabel");
   const matchPrefixLabel = document.getElementById("matchPrefixLabel");
-  const matchExactValue = document.getElementById("matchExactValue");
-  const matchPrefixValue = document.getElementById("matchPrefixValue");
+  const matchRegexLabel = document.getElementById("matchRegexLabel");
+  const matchExactInput = document.getElementById("matchExactInput");
+  const matchPrefixInput = document.getElementById("matchPrefixInput");
+  const matchRegexInput = document.getElementById("matchRegexInput");
   const devModeToogle = document.getElementById("devModeToogle");
   const devModeLabel = document.getElementById("devModeLabel");
   const dbModeHint = document.getElementById("dbModeHint");
@@ -28,16 +76,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       resetBtn: "Réinitialiser",
       renamed: "✔ Onglet renommé !",
       reset: "✔ Titre réinitialisé !",
-      matchTypeLabel: "Type de correspondance :",
-      matchExact: "URL exacte",
-      matchPrefix: "URL commence par",
-      devModeLabel: "Mode Dev : DB",
+      currentUrlLabel: "URL actuelle :",
+      matchTypeLabel: "Type de correspondance en fonction de l'URL actuelle :",
+      matchExact: "Strictement la même",
+      matchPrefix: "Commencant strictement pareil",
+      matchRegex: "Regex",
+      devModeLabel: "Mode Dev : Base de données",
       dbModeHint:
         "Analyse l'URL pour associer un nom à une base de données et une table.",
       dbModeMissing:
         "❌ Mode DB indisponible : base de données ou table introuvable dans l'URL.",
       dbModeWarningNotDb:
         "Cette page ne semble pas être un outil type phpMyAdmin (pas de db=, table=, etc. dans l'URL). Le mode Dev : DB ne pourra pas être appliqué.",
+      regexInvalid:
+        "❌ Expression régulière invalide. Vérifiez la syntaxe.",
     },
     en: {
       title: "Rename this tab",
@@ -46,16 +98,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       resetBtn: "Reset",
       renamed: "✔ Tab renamed!",
       reset: "✔ Title reset!",
-      matchTypeLabel: "Match type:",
-      matchExact: "Exact URL",
-      matchPrefix: "URL starts with",
-      devModeLabel: "Dev Mode : DB",
+      currentUrlLabel: "Current URL: ",
+      matchTypeLabel: "Match type based on the current URL:",
+      matchExact: "Exactly the same",
+      matchPrefix: "Starting with exactly the same",
+      matchRegex: "Regex",
+      devModeLabel: "Dev Mode : Database",
       dbModeHint:
         "Analyze the URL to associate a name with a database and a table.",
       dbModeMissing:
         "❌ DB mode unavailable: database or table not found in the URL.",
       dbModeWarningNotDb:
         "This page doesn't look like a DB admin tool (no db=, table=, etc. in the URL). Dev mode: DB cannot be applied.",
+      regexInvalid:
+        "❌ Invalid regular expression. Check the syntax.",
     },
   };
 
@@ -80,6 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     matchTypeLabel.textContent = t.matchTypeLabel;
     matchExactLabel.textContent = t.matchExact;
     matchPrefixLabel.textContent = t.matchPrefix;
+    matchRegexLabel.textContent = t.matchRegex;
     devModeLabel.textContent = t.devModeLabel;
     dbModeHint.textContent = t.dbModeHint;
     if (dbModeWarning.classList.contains("visible")) {
@@ -98,17 +155,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   langFrBtn.addEventListener("click", () => updateLanguage("fr"));
   langEnBtn.addEventListener("click", () => updateLanguage("en"));
 
-  // Toggle visibility of match exact value
-  matchExactRadio.addEventListener("change", () => {
-    matchExactValue.type = matchExactRadio.checked ? "text" : "hidden";
-    matchPrefixValue.type = matchPrefixRadio.checked ? "text" : "hidden";
-  });
+  // Regex validation function
+  function isValidRegex(pattern) {
+    try {
+      new RegExp(pattern);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
-  // Toggle visibility of match prefix value
-  matchPrefixRadio.addEventListener("change", () => {
-    matchExactValue.type = matchExactRadio.checked ? "text" : "hidden";
-    matchPrefixValue.type = matchPrefixRadio.checked ? "text" : "hidden";
-  });
+  // Show only the input for the selected radio option
+  function updateInputVisibility() {
+    matchExactInput.type = matchExactRadio.checked ? "text" : "hidden";
+    matchPrefixInput.type = matchPrefixRadio.checked ? "text" : "hidden";
+    matchRegexInput.type = matchRegexRadio.checked ? "text" : "hidden";
+  }
+
+  matchExactRadio.addEventListener("change", updateInputVisibility);
+  matchPrefixRadio.addEventListener("change", updateInputVisibility);
+  matchRegexRadio.addEventListener("change", updateInputVisibility);
 
   function extractDbTableFromUrl(rawUrl) {
     try {
@@ -141,9 +207,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   function setDbModeEnabled(enabled) {
     matchExactRadio.disabled = enabled;
     matchPrefixRadio.disabled = enabled;
+    matchRegexRadio.disabled = enabled;
     matchTypeLabel.style.opacity = enabled ? "0.5" : "1";
     matchExactLabel.style.opacity = enabled ? "0.5" : "1";
     matchPrefixLabel.style.opacity = enabled ? "0.5" : "1";
+    matchRegexLabel.style.opacity = enabled ? "0.5" : "1";
+    // When DB mode is enabled, reset to Exact and hide all sub-inputs
+    if (enabled) {
+      if (matchRegexRadio.checked || matchPrefixRadio.checked) {
+        matchExactRadio.checked = true;
+      }
+      matchExactInput.type = "hidden";
+      matchPrefixInput.type = "hidden";
+      matchRegexInput.type = "hidden";
+    } else {
+      updateInputVisibility();
+    }
   }
 
   function updateDbModeWarning() {
@@ -163,12 +242,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const originalTitle = tab.title; // Store original title for reset
   const dbInfo = extractDbTableFromUrl(url);
 
-  // Pre-fill the exact URL input with the current tab's URL
-  matchExactValue.value = url;
-  matchPrefixValue.value = url;
-  // Initially show exact URL input (since matchExact is checked by default)
-  matchExactValue.type = "text";
-  matchPrefixValue.type = "hidden";
+  // Pre-fill exact and prefix inputs with the current tab URL
+  matchExactInput.value = url;
+  matchPrefixInput.value = url;
+
+  // Show only the exact input by default (matchExact is checked by default)
+  updateInputVisibility();
 
   devModeToogle.addEventListener("change", () => {
     setDbModeEnabled(devModeToogle.checked);
@@ -182,9 +261,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateDbModeWarning();
   });
 
-  // Helper function to find matching entry (same Dev-mode logic as in background.js)
+  // Helper function to find matching entry
+  // Priority: 1. Exact URL  2. Regex  3. DB mode  4. Prefix
   function findMatchingEntry(currentUrl, storageData) {
-    // First, check for DB mode matches
+    // 1. Exact URL match
+    if (storageData[currentUrl]) {
+      return { url: currentUrl, entry: storageData[currentUrl] };
+    }
+
+    // 2. Regex matches — checked before DB mode so explicit patterns take priority
+    for (const [storedUrl, entry] of Object.entries(storageData)) {
+      if (storedUrl === "language") continue;
+      if (storedUrl === currentUrl) continue;
+      if (typeof entry !== "object" || !entry) continue;
+      if (entry.mode === "db") continue;
+
+      // Support new format (matchType: "regex") and old format (isRegex: true)
+      const isRegex = entry.matchType === "regex" || entry.isRegex === true;
+      if (!isRegex || !entry.name) continue;
+
+      try {
+        const regex = new RegExp(storedUrl);
+        if (regex.test(currentUrl)) {
+          return { url: storedUrl, entry: entry };
+        }
+      } catch (e) {
+        // Invalid regex stored, skip
+      }
+    }
+
+    // 3. DB mode matches
     if (dbInfo) {
       for (const [storedKey, entry] of Object.entries(storageData)) {
         if (storedKey === "language") continue;
@@ -194,13 +300,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         const hostMatches = !entry.host || entry.host === dbInfo.host;
         if (!hostMatches || entry.db !== dbInfo.db) continue;
 
-        // If URL targets a specific table, only match entries for that table
         if (dbInfo.table) {
           if (entry.table && entry.table === dbInfo.table) {
             return { url: storedKey, entry: entry };
           }
         } else {
-          // URL is DB-only (no table): only match DB-level entries (no table)
           if (!entry.table) {
             return { url: storedKey, entry: entry };
           }
@@ -208,21 +312,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    // Then, check for exact match
-    if (storageData[currentUrl]) {
-      return { url: currentUrl, entry: storageData[currentUrl] };
-    }
-
-    // Then, check for prefix matches
+    // 4. Prefix matches
     for (const [storedUrl, entry] of Object.entries(storageData)) {
       if (storedUrl === "language") continue;
-      if (storedUrl === currentUrl) continue; // Already checked above
-
+      if (storedUrl === currentUrl) continue;
       if (typeof entry === "object" && entry.mode === "db") continue;
 
       let matchType = "exact";
       if (typeof entry === "object" && entry.matchType) {
         matchType = entry.matchType;
+        // Old format: isRegex entries already handled above
+        if (entry.isRegex === true) continue;
       }
 
       if (matchType === "prefix" && currentUrl.startsWith(storedUrl)) {
@@ -242,10 +342,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Handle both old format (string) and new format (object)
       if (typeof entry === "string") {
         tabNameInput.value = entry;
-        matchExactRadio.checked = true; // Default to exact for old entries
-        matchExactValue.value = storedUrl;
-        matchExactValue.type = "text";
-        matchPrefixValue.type = "hidden";
+        matchExactRadio.checked = true;
         devModeToogle.checked = false;
         setDbModeEnabled(false);
       } else if (entry.name) {
@@ -256,18 +353,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
           devModeToogle.checked = false;
           setDbModeEnabled(false);
-          const matchType = entry.matchType || "exact";
-          if (matchType === "prefix") {
+          // Support new format (matchType: "regex") and old format (isRegex: true)
+          let matchType = entry.matchType || "exact";
+          if (entry.isRegex === true) matchType = "regex";
+
+          if (matchType === "regex") {
+            matchRegexRadio.checked = true;
+            matchRegexInput.value = storedUrl;
+          } else if (matchType === "prefix") {
             matchPrefixRadio.checked = true;
-            matchPrefixValue.value = storedUrl;
-            matchPrefixValue.type = "text";
-            matchExactValue.type = "hidden";
+            matchPrefixInput.value = storedUrl;
           } else {
             matchExactRadio.checked = true;
-            matchExactValue.value = storedUrl;
-            matchExactValue.type = "text";
-            matchPrefixValue.type = "hidden";
+            matchExactInput.value = storedUrl;
           }
+          updateInputVisibility();
         }
       }
     } else if (dbInfo) {
@@ -321,29 +421,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
 
       chrome.storage.sync.set({ [dbKey]: dataToSave }, () => {
-        // Changer le titre immédiatement
-        chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func: (title) => {
-            document.title = title;
-          },
-          args: [newName],
-        });
-
+        applyAndPersistTitle(tab.id, newName);
         showStatus("renamed");
       });
       return;
     }
 
     // Get selected match type
-    const matchType = matchExactRadio.checked ? "exact" : "prefix";
+    let matchType = "exact";
+    if (matchPrefixRadio.checked) {
+      matchType = "prefix";
+    } else if (matchRegexRadio.checked) {
+      matchType = "regex";
+    }
 
-    // Get the URL to use based on match type
-    let urlToSave = url; // Default to current tab URL
-    if (matchType === "exact" && matchExactValue.value.trim()) {
-      urlToSave = matchExactValue.value.trim();
-    } else if (matchType === "prefix" && matchPrefixValue.value.trim()) {
-      urlToSave = matchPrefixValue.value.trim();
+    // Get the URL/pattern from the active input
+    let urlToSave;
+    if (matchType === "regex") {
+      urlToSave = matchRegexInput.value.trim();
+      if (!urlToSave) {
+        matchRegexInput.focus();
+        return;
+      }
+      if (!isValidRegex(urlToSave)) {
+        showStatus("regexInvalid", true);
+        return;
+      }
+    } else if (matchType === "prefix") {
+      urlToSave = matchPrefixInput.value.trim() || url;
+    } else {
+      urlToSave = matchExactInput.value.trim() || url;
     }
 
     // Sauvegarder dans le storage avec le type de correspondance
@@ -354,14 +461,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     chrome.storage.sync.set({ [urlToSave]: dataToSave }, () => {
-      // Changer le titre immédiatement
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (title) => {
-          document.title = title;
-        },
-        args: [newName],
-      });
+      applyAndPersistTitle(tab.id, newName);
+      if (matchType === "regex") {
+        let matched = false;
+        let regexError = null;
+        try {
+          matched = new RegExp(urlToSave).test(url);
+        } catch (e) {
+          regexError = e.message;
+        }
+      }
 
       showStatus("renamed");
     });
@@ -375,10 +484,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (match) {
         // Supprimer l'entrée correspondante du storage
         chrome.storage.sync.remove([match.url], () => {
-          // Restaurer le titre original
+          // Stop the observer first, then restore the original title
           chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: (title) => {
+              const stateKey = "__tabRenamerState";
+              const state = window[stateKey];
+              if (state?.observer) {
+                state.observer.disconnect();
+              }
+              if (state?.intervalId) {
+                clearInterval(state.intervalId);
+              }
+              window[stateKey] = null;
               document.title = title;
             },
             args: [originalTitle],

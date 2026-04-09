@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <style>
     body {
-      width: 320px;
+      width: 350px;
       padding: 16px;
       font-family:
         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -168,15 +168,14 @@
       margin: 0;
     }
 
-    #matchExactValue,
-    #matchPrefixValue {
-      margin-top: 6px;
+    .match-sub-input {
+      margin-top: 4px;
       font-size: 12px;
       padding: 6px 8px;
+      margin-bottom: 4px;
     }
 
-    #matchExactValue[type="hidden"],
-    #matchPrefixValue[type="hidden"] {
+    .match-sub-input[type="hidden"] {
       display: none;
     }
 
@@ -246,12 +245,18 @@
         <input type="radio" id="matchExact" name="matchType" value="exact" checked />
         <label for="matchExact" id="matchExactLabel">URL exacte</label>
       </div>
-      <input type="text" id="matchExactValue" value="" placeholder="URL exacte à renommer..." />
+      <input type="text" id="matchExactInput" class="match-sub-input" placeholder="URL exacte..." />
       <div class="radio-option">
         <input type="radio" id="matchPrefix" name="matchType" value="prefix" />
         <label for="matchPrefix" id="matchPrefixLabel">URL commence par</label>
       </div>
-      <input type="text" id="matchPrefixValue" value="" placeholder="URL commence par..." />
+      <input type="text" id="matchPrefixInput" class="match-sub-input" type="hidden"
+        placeholder="URL commence par..." />
+      <div class="radio-option">
+        <input type="radio" id="matchRegex" name="matchType" value="regex" />
+        <label for="matchRegex" id="matchRegexLabel">Regex</label>
+      </div>
+      <input type="text" id="matchRegexInput" class="match-sub-input" type="hidden" placeholder="Regex pattern..." />
     </div>
   </div>
   <div class="db-mode-container">
@@ -269,6 +274,7 @@
   <button id="renameBtn">Renommer</button>
   <button id="resetBtn" class="reset-btn">Réinitialiser</button>
   <div id="status" class="status"></div>
+
   <script src="popup.js"></script>
 </body>
 
