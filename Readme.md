@@ -49,14 +49,14 @@ Many sites change `document.title` after load. The extension reapplies your name
 - Clear radio buttons for matching type selection
 - One-click reset functionality
 
-## Version 1.0.2
+## Version 1.1.0
 
 - **Custom URL fields**: Separate inputs for Exact URL and “URL starts with”, prefilled with the active tab’s URL but editable so you can target another address or prefix without switching tabs first.
 - **Regex match type**: Third radio option with its own pattern field; patterns are validated before save.
 - **Match priority**: Exact URL → Regex → Dev DB mode → Prefix, so a saved regex is not shadowed by DB auto-rules when both could apply.
 - **Stronger title persistence**: Background + content script re-apply custom titles when sites update the tab title after load (common on GitHub, phpMyAdmin, and other SPAs).
 - **Content script alignment**: `content.js` mirrors the same matching logic as the background worker and reads sync storage for regex / prefix / DB rules when no per-page local entry exists.
-- **Manifest**: Extension version bumped to **1.0.2**.
+- **Manifest**: Extension version bumped to **1.1.0**.
 
 ## Version 1.0.1
 
