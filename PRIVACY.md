@@ -1,191 +1,145 @@
-# Privacy Policy - Advanced Tab Renamer
+# Privacy Policy — Advanced Tab Renamer
 
-**Last Updated:** January 25, 2026
+**Last Updated:** May 13, 2026
 
 ## Introduction
 
-Advanced Tab Renamer ("we", "our", or "the extension") is committed to protecting your privacy. This Privacy Policy explains how our Chrome extension handles your data.
+Advanced Tab Renamer ("the extension") is committed to protecting your privacy. This policy explains how the extension handles your data.
 
 ## Data Collection
 
-**We do NOT collect any personal data.**
+**We do not collect any personal data.**
 
-Advanced Tab Renamer does not:
+The extension does not:
 
-- Collect any personal information
-- Track your browsing history
-- Monitor your activity
+- Collect personal information
+- Track your browsing history or activity
 - Send any data to external servers
 - Use analytics or tracking tools
 - Share any information with third parties
 
 ## Data Storage
 
-### What We Store
+### What is stored
 
 The extension stores the following data **locally on your device only**:
 
 1. **Custom tab names** you create
-2. **URL patterns** (exact or prefix) associated with your custom names
-3. **Language preference** (English or French)
-4. **Developer mode settings** (phpMyAdmin detection on/off)
+2. **Custom favicon images** (stored as base64-encoded PNG, max 32×32 px)
+3. **URL patterns** (exact URL, prefix, or regex) associated with your rules
+4. **Language preference** (English or French)
+5. **Developer Mode setting** (phpMyAdmin DB detection)
 
-### Where Data Is Stored
+### Where data is stored
 
-All data is stored using Chrome's **Sync Storage API**, which means:
+All data is stored using **`chrome.storage.sync`**:
 
-- Data is stored in your Chrome browser profile
-- Data can sync across your devices if you're signed into Chrome with sync enabled
-- Data is stored locally in: `DevTools → Application → Storage → Extension storage → Advanced Tab Renamer`
-- **No external servers are involved**
+- Data lives inside your Chrome browser profile
+- If Chrome Sync is enabled in your Google account, data may sync across your signed-in devices
+- Data is never sent to any server operated by this extension
+- You can inspect it at any time: DevTools → Application → Storage → Extension storage
 
-### Data Retention
+### Data retention
 
-- Your custom tab names are stored **indefinitely** until you:
-  - Manually delete them using the "Reset" button
-  - Uninstall the extension
-  - Clear your Chrome extension data
+Your rules are stored indefinitely until you:
+- Use the **Reset** button in the popup to delete a specific rule
+- Uninstall the extension
+- Clear Chrome extension data manually
 
 ## Chrome Sync
 
-If you have Chrome Sync enabled in your Google account settings:
-
-- Your custom tab names may sync to other devices where you're signed into Chrome
-- This is a Chrome feature controlled by Google, not by our extension
-- You can disable Chrome Sync in Chrome Settings → Sync and Google Services
-- Data synced through Chrome is subject to [Google's Privacy Policy](https://policies.google.com/privacy)
+If Chrome Sync is enabled:
+- Your rules may sync to other devices where you are signed into Chrome
+- This is a Chrome feature controlled entirely by Google, not by this extension
+- It is subject to [Google's Privacy Policy](https://policies.google.com/privacy)
+- You can disable sync at: Chrome Settings → Sync and Google Services
 
 ## Permissions Explained
 
-Our extension requests the following permissions:
+| Permission   | Why it is needed                                                         |
+| ------------ | ------------------------------------------------------------------------ |
+| `storage`    | Save and retrieve your rename rules and favicon data locally             |
+| `activeTab`  | Read the current tab's URL to pre-fill the popup and apply rules         |
+| `tabs`       | Detect tab navigation and re-apply rules after page loads                |
+| `scripting`  | Inject the content script to enforce custom titles and favicons on pages |
+| `<all_urls>` | Allow the extension to work on any website you choose to rename          |
 
-### Required Permissions
+### What these permissions do NOT allow
 
-1. **`storage`**
-   - **Why:** To save your custom tab names locally
-   - **Usage:** Stores tab name configurations in Chrome's storage
-
-2. **`activeTab`**
-   - **Why:** To rename the current active tab
-   - **Usage:** Reads the current tab's URL and updates its title
-
-3. **`tabs`**
-   - **Why:** To access and modify tab titles
-   - **Usage:** Allows renaming of tabs you choose to rename
-
-4. **`scripting`**
-   - **Why:** To inject the renaming script into web pages
-   - **Usage:** Enables dynamic title changes on tabs
-
-5. **`<all_urls>` (Host Permissions)**
-   - **Why:** To work on any website you visit
-   - **Usage:** Allows the extension to rename tabs on any domain
-
-### What We DON'T Do With These Permissions
-
-- We don't read the content of web pages
-- We don't track which websites you visit
-- We don't modify website content (except the browser tab title)
-- We don't send any data from websites to external servers
+- Reading or exfiltrating web page content
+- Tracking which websites you visit
+- Modifying any part of a web page other than its title and favicon link tag
+- Sending data to any external server
 
 ## Third-Party Services
 
-**We do not use any third-party services.**
+**None.** The extension uses no analytics, crash reporting, advertising networks, external APIs, or cloud storage.
 
-- No analytics (e.g., Google Analytics)
-- No crash reporting tools
-- No advertising networks
-- No external APIs
-- No cloud storage providers
-
-## phpMyAdmin Detection
+## phpMyAdmin / Developer Mode
 
 When "Developer Mode: DB" is enabled:
 
-- The extension reads the current tab's URL to detect phpMyAdmin database and table names
-- This analysis happens **entirely locally** in your browser
-- No URL data is sent to any server
-- Detection is performed only when the feature is explicitly enabled by you
+- The extension reads the current tab's URL to extract database and table names from query parameters (`db=`, `table=`, etc.)
+- This analysis runs entirely locally inside your browser
+- No URL data is ever transmitted outside your device
 
 ## Children's Privacy
 
-Our extension does not knowingly collect information from children under 13 years of age. The extension is designed for general productivity use and does not target children.
+This extension is designed for general developer productivity use. It does not knowingly collect information from children under 13 years of age.
 
 ## Open Source
 
-Advanced Tab Renamer is open source software:
+Advanced Tab Renamer is open source:
 
-- Source code is available on GitHub: [github.com/MaximeCode/Tab_Renamer](https://github.com/MaximeCode/Tab_Renamer)
-- You can review the code to verify our privacy claims
-- Community contributions are welcome and audited
+- Source code: [github.com/MaximeCode/Tab_Renamer](https://github.com/MaximeCode/Tab_Renamer)
+- You can audit the code to verify every claim in this policy
 
-## Your Rights
+## Your Rights & Data Control
 
-You have complete control over your data:
+| Action           | How to do it                                                               |
+| ---------------- | -------------------------------------------------------------------------- |
+| View stored data | DevTools (F12) → Application → Extension storage → Advanced Tab Renamer    |
+| Delete one rule  | Click **Reset** in the extension popup on the relevant tab                 |
+| Delete all data  | Uninstall the extension, or clear extension data in `chrome://extensions/` |
 
-### Access Your Data
+There is currently no built-in bulk export feature. Data can be copied manually from DevTools.
 
-- View all stored tab names in Chrome DevTools:
-  - Press F12 → Application tab → Storage → Extension storage → Advanced Tab Renamer
+## GDPR (EU Users)
 
-### Delete Your Data
+- **Legal basis:** Legitimate interest in providing tab organisation functionality
+- **Data processing:** Entirely local — no data leaves your device via this extension
+- **No profiling:** No user profiles or automated decision-making
+- **Data controller:** Maxime BAUDE (@MaximeCode)
 
-- Use the "Reset" button in the extension popup to delete a specific tab name
-- Uninstall the extension to delete all data
-- Clear extension data in Chrome: `chrome://extensions/` → Extension details → "Remove extension"
+## Changes to This Policy
 
-### Export Your Data
+Updates will be:
+- Committed to the GitHub repository with a changelog entry
+- Reflected in the Chrome Web Store listing
+- Marked with an updated "Last Updated" date at the top of this file
 
-- Currently, there is no built-in export feature
-- You can view data in DevTools and manually copy it
+Continued use of the extension after a policy change constitutes acceptance of the updated policy.
 
-## Changes to This Privacy Policy
-
-We may update this Privacy Policy from time to time. Changes will be:
-
-- Posted on our GitHub repository
-- Updated in the Chrome Web Store listing
-- Noted with a "Last Updated" date at the top
-
-Continued use of the extension after changes constitutes acceptance of the updated policy.
-
-## Data Breach Notification
-
-Since we don't collect or store data on external servers, there is no risk of a data breach involving our servers. Your data exists only on your local device.
-
-## Contact Us
-
-If you have questions about this Privacy Policy:
+## Contact
 
 - **GitHub Issues:** [github.com/MaximeCode/Tab_Renamer/issues](https://github.com/MaximeCode/Tab_Renamer/issues)
 - **Email:** [contact.mbaude@gmail.com](mailto:contact.mbaude@gmail.com)
-- **Chrome Web Store:** Leave a comment on the extension page
+- **Chrome Web Store:** Leave a comment on the extension listing page
 
-## Legal Basis (GDPR Compliance)
-
-For users in the European Union:
-
-- **Legal Basis:** Legitimate interest in providing tab organization functionality
-- **Data Processing:** All data processing happens locally on your device
-- **No Profiling:** We do not create user profiles or perform automated decision-making
-- **Data Controller:** Maxime BAUDE (@MaximeCode)
-
-## Summary
+---
 
 **In plain English:**
 
 ✅ Your data stays on your device  
-✅ No tracking or analytics  
+✅ No tracking, no analytics, no ads  
 ✅ No external servers  
-✅ You control everything  
-✅ Open source - you can verify  
+✅ You control everything — delete anytime  
+✅ Open source — every line is auditable  
 
 ❌ We don't collect anything  
 ❌ We don't share anything  
 ❌ We don't sell anything  
-❌ We don't track anything  
 
 ---
 
-**Advanced Tab Renamer**
-by Maxime BAUDE (@MaximeCode on GitHub)
+*Advanced Tab Renamer — by Maxime BAUDE ([@MaximeCode](https://github.com/MaximeCode))*
