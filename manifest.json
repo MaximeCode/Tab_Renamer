@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Advanced Tab Renamer - Custom Names & Database Detection",
-  "version": "1.0.1",
-  "description": "Advanced tab renaming with URL patterns & database detection. Persistent storage. Bilingual (EN/FR). For developers & power users.",
+  "name": "Advanced Tab Renamer - Custom Names & Icons",
+  "version": "2.0.0",
+  "description": "Rename any tab & set a custom favicon by URL, prefix, or regex. phpMyAdmin DB detection. Synced. Bilingual EN/FR. For developers & power users.",
   "permissions": [
     "storage",
     "activeTab",

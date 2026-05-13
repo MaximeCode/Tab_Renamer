@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <style>
     body {
-      width: 320px;
+      width: 350px;
       padding: 16px;
       font-family:
         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -168,6 +168,17 @@
       margin: 0;
     }
 
+    .match-sub-input {
+      margin-top: 4px;
+      font-size: 12px;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+    }
+
+    .match-sub-input[type="hidden"] {
+      display: none;
+    }
+
     .db-mode-container {
       margin-bottom: 12px;
       padding: 10px;
@@ -217,6 +228,71 @@
     .db-mode-warning.visible {
       display: block;
     }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid #e8eaed;
+      margin: 14px 0 12px 0;
+    }
+
+    .favicon-section-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #5f6368;
+      margin-bottom: 8px;
+    }
+
+    .favicon-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .favicon-preview-wrapper {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #faviconPreview {
+      display: block;
+    }
+
+    #faviconInput {
+      display: none;
+    }
+
+    .favicon-choose-btn {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px dashed #dadce0;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #5f6368;
+      cursor: pointer;
+      text-align: center;
+      background: #f8f9fa;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+      display: block;
+      box-sizing: border-box;
+      margin-bottom: 0;
+      line-height: 1.4;
+    }
+
+    .favicon-choose-btn:hover {
+      background: #e8eaed;
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
   </style>
 </head>
 
@@ -234,10 +310,21 @@
         <input type="radio" id="matchExact" name="matchType" value="exact" checked />
         <label for="matchExact" id="matchExactLabel">URL exacte</label>
       </div>
+      <input type="text" id="matchExactInput" class="match-sub-input" placeholder="URL exacte..." />
+      <!--  -->
       <div class="radio-option">
         <input type="radio" id="matchPrefix" name="matchType" value="prefix" />
         <label for="matchPrefix" id="matchPrefixLabel">URL commence par</label>
       </div>
+      <input type="text" id="matchPrefixInput" class="match-sub-input" type="hidden"
+        placeholder="URL commence par..." />
+      <!--  -->
+      <div class="radio-option">
+        <input type="radio" id="matchRegex" name="matchType" value="regex" />
+        <label for="matchRegex" id="matchRegexLabel">Regex</label>
+      </div>
+      <input type="text" id="matchRegexInput" class="match-sub-input" type="hidden" placeholder="Regex pattern..." />
+      <!--  -->
     </div>
   </div>
   <div class="db-mode-container">
@@ -252,9 +339,21 @@
       <span id="dbModeWarningText"></span>
     </div>
   </div>
-  <button id="renameBtn">Renommer</button>
-  <button id="resetBtn" class="reset-btn">Réinitialiser</button>
+
+  <span class="favicon-section-label" id="faviconSectionLabel">Favicon personnalisé</span>
+  <div class="favicon-row">
+    <div class="favicon-preview-wrapper">
+      <canvas id="faviconPreview" width="32" height="32"></canvas>
+    </div>
+    <label class="favicon-choose-btn" for="faviconInput" id="faviconChooseBtn">Choisir une image…</label>
+    <input type="file" id="faviconInput" accept="image/*" />
+  </div>
   <div id="status" class="status"></div>
+  <hr class="section-divider" />
+
+  <button id="renameBtn">Appliquer</button>
+  <button id="resetBtn" class="reset-btn">Réinitialiser</button>
+
   <script src="popup.js"></script>
 </body>
 
