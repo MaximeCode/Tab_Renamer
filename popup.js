@@ -139,6 +139,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       : `db:${dbInfo.host}:${dbInfo.db}`;
   }
 
+  // snake_case / kebab-case → PascalCase (e.g. user_accounts → UserAccounts)
+  function toPascalCase(value) {
+    if (!value) return "";
+    return value
+      .split(/[-_]+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join("");
+  }
+
   function setDbModeEnabled(enabled) {
     matchExactRadio.disabled = enabled;
     matchPrefixRadio.disabled = enabled;
@@ -268,7 +278,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   devModeToogle.addEventListener("change", () => {
     setDbModeEnabled(devModeToogle.checked);
     if (devModeToogle.checked && !tabNameInput.value.trim()) {
-      tabNameInput.value = dbInfo?.table || dbInfo?.db || "";
+      tabNameInput.value = toPascalCase(dbInfo?.table || dbInfo?.db || "");
     }
     updateDbModeWarning();
   });
@@ -311,7 +321,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else if (dbInfo) {
       devModeToogle.checked = true;
       setDbModeEnabled(true);
-      if (!tabNameInput.value.trim()) tabNameInput.value = dbInfo.table || dbInfo.db;
+      if (!tabNameInput.value.trim()) tabNameInput.value = toPascalCase(dbInfo.table || dbInfo.db);
     }
     updateDbModeWarning();
     tabNameInput.select();
