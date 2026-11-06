@@ -209,14 +209,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ─── Matching logic (same priority as background.js / content.js) ─────────────
+  // Priority: 1. Exact URL  2. Longest prefix  3. Regex  4. DB mode
 
   function findMatchingEntry(currentUrl, storageData) {
-    // 1. Exact URL
+    // 1. Exact URL — always wins over broader rules
     if (storageData[currentUrl]) {
       return { url: currentUrl, entry: storageData[currentUrl] };
     }
 
-    // 2. Regex
+    // 2. Longest matching prefix (most specific path wins over a parent prefix)
+    let bestPrefix = null;
+    for (const [storedUrl, entry] of Object.entries(storageData)) {
+      if (storedUrl === "language" || storedUrl === currentUrl) continue;
+      if (typeof entry !== "object" || !entry || entry.mode === "db") continue;
+      if (entry.matchType === "regex" || entry.isRegex === true) continue;
+      if (!entry.name && !entry.icon) continue;
+      if ((entry.matchType || "exact") !== "prefix") continue;
+      if (!currentUrl.startsWith(storedUrl)) continue;
+      if (!bestPrefix || storedUrl.length > bestPrefix.url.length) {
+        bestPrefix = { url: storedUrl, entry };
+      }
+    }
+    if (bestPrefix) return bestPrefix;
+
+    // 3. Regex
     for (const [storedUrl, entry] of Object.entries(storageData)) {
       if (storedUrl === "language" || storedUrl === currentUrl) continue;
       if (typeof entry !== "object" || !entry || entry.mode === "db") continue;
@@ -227,7 +243,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       } catch (e) { }
     }
 
-    // 3. DB mode
+    // 4. DB mode
     if (dbInfo) {
       for (const [storedKey, entry] of Object.entries(storageData)) {
         if (storedKey === "language") continue;
@@ -237,16 +253,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (dbInfo.table ? entry.table === dbInfo.table : !entry.table) {
           return { url: storedKey, entry };
         }
-      }
-    }
-
-    // 4. Prefix
-    for (const [storedUrl, entry] of Object.entries(storageData)) {
-      if (storedUrl === "language" || storedUrl === currentUrl) continue;
-      if (typeof entry === "object" && entry.mode === "db") continue;
-      if (typeof entry !== "object" || !entry || entry.isRegex === true) continue;
-      if ((entry.matchType || "exact") === "prefix" && currentUrl.startsWith(storedUrl)) {
-        return { url: storedUrl, entry };
       }
     }
 
